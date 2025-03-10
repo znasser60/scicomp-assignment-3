@@ -1,0 +1,26 @@
+ame: Tests
+
+on:
+  push: # Whenever new code enters the main branch
+    branches:
+      - main
+  pull_request: # Whenever we create a pull-request into main
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.6.2"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Run tests
+        run: uv run pytest
