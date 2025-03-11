@@ -1,0 +1,66 @@
+[project]
+name = "scicomp"
+version = "0.1.0"
+description = "Project code for the third assignment, Scientific Computing 2025"
+readme = "README.md"
+authors = [
+    { name = "Zainab Nasser", email = "znnasser01@gmail.com" },
+    { name = "Marcell Szegedi", email = "szegedi.marcell@gmail.com" },
+    { name = "Henry Zwart", email = "henrybzwart@gmail.com" },
+]
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.10.0",
+    "numba>=0.61.0",
+    "numpy>=2.1.3",
+    "scipy>=1.15.2",
+    "seaborn>=0.13.2",
+    "tqdm>=4.67.1",
+    "typer>=0.15.1",
+    "types-seaborn>=0.13.2.20250111",
+]
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.127.1",
+    "mypy>=1.15.0",
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+]
+
+[project.scripts]
+scicomp = "scicomp.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+
+[tool.ruff.lint]
+select = [
+    # pydocstyle
+    "D", # comment to ignore docstring checks
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore incorrect docstrings in the CLI
+"src/scicomp/cli/*" = ["D"]
+"tests/*" = ["D"]
