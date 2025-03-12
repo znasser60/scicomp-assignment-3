@@ -10,7 +10,7 @@ def check_valid_spatial_discretisation(
 
     Assuming that dy=dx, discretisation of a rectangle using N grid points
     should yield an integer number of grid points in the y-direction, with
-    the boundaries (y_min, y_max) explicitly represented.
+    the boundaries explicitly represented.
 
     We verify this by calculating dx = width / N, and checking that
     dx does indeed divide height exactly. Fractions are used to prevent
