@@ -5,7 +5,12 @@ from fractions import Fraction
 import matplotlib.pyplot as plt
 import numpy as np
 
-from scicomp.visualisation import plot_circular_state, plot_rectangular_state
+from scicomp.shape import Shape
+from scicomp.visualisation import (
+    plot_circular_state,
+    plot_eigenmode,
+    plot_rectangular_state,
+)
 
 
 def plot_grid_values():
@@ -53,5 +58,42 @@ def plot_grid_values():
     plt.show()
 
 
+def plot_eigenmodes():
+    """Plot some fake eigenmodes labelled by their eigenfrequencies."""
+    fig, axes = plt.subplots(1, 4, sharey=True, constrained_layout=True)
+
+    # Make grid roughly 4pi in each dimension
+    frac_width = Fraction(88 / 7)
+    frac_height = Fraction(88 / 7)
+    nx: int = 1000
+    dx = frac_width / nx
+    ny = frac_height / dx
+
+    assert ny.is_integer()
+
+    width = float(frac_width)
+    height = float(frac_height)
+    ny = ny.numerator
+
+    # Mock up some fake eigenthing results
+    X, Y = np.meshgrid(np.linspace(0, width, nx + 1), np.linspace(0, height, ny + 1))
+    eigenfrequencies = np.array([1 / 4, 1 / 2, 1.0, 2.0])
+    eigenmodes = np.sin(eigenfrequencies[:, None, None] * X[None, ...]) + np.cos(
+        eigenfrequencies[:, None, None] * Y[None, ...]
+    )
+    eigenmodes[:, [0, -1]] = 0
+    eigenmodes[:, :, [0, -1]] = 0
+
+    # Reshape into state vector, as this is the expected input
+    eigenmodes = np.reshape(eigenmodes, (4, -1))
+    for i, ef in enumerate(eigenfrequencies):
+        plot_eigenmode(
+            eigenmodes[i], ef, Shape.Square, axes[i], width=width, height=height
+        )
+
+    plt.show()
+
+
 if __name__ == "__main__":
     plot_grid_values()
+    plot_eigenmodes()
