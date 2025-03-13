@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.sparse as sp
 import scipy.linalg as la
+import matplotlib.pyplot as plt
 
 def initialize_grid(L, N): 
     """
@@ -22,7 +23,7 @@ def initialize_grid(L, N):
     y = np.linspace(-L/2, L/2, N)
     X, Y = np.meshgrid(x, y)
     mask = X**2 + Y**2 < (L/2)**2 
-    index_grid = np.full((N,N), None)
+    index_grid = np.full((N, N), None)
     circle_points = np.where(mask)
     num_circle_points = len(circle_points[0])
     index_grid[circle_points] = np.arange(num_circle_points)
@@ -64,7 +65,21 @@ def solve_circle_laplacian(L, N):
     eigenvalues, eigenvectors = la.eigh(laplacian.toarray())
 
     return eigenvalues, eigenvectors, index_grid
-        
 
+def plot_eigenvectors(L, N, k): 
 
+    eigenvalues, eigenvectors, index_grid = solve_circle_laplacian(L, N)
+    _, axes = plt.subplots(2, k//2, figsize=(6, 6))
 
+    sorted_eigenvalue_indices = np.argsort(np.abs(eigenvalues))
+
+    for i, ax in enumerate(axes.flat):
+        mode_values = np.zeros((N, N))  
+        mode_values[index_grid != None] = eigenvectors[:, sorted_eigenvalue_indices[i]]
+        ax.imshow(mode_values, extent=(-L/2, L/2, -L/2, L/2), origin="lower", cmap="bwr")
+        ax.set_title(f"λ={eigenvalues[sorted_eigenvalue_indices[i]]:.4f}")
+
+    plt.tight_layout()
+    plt.show()
+
+plot_eigenvectors(L = 1, N = 50, k = 6)
