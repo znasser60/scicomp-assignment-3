@@ -23,7 +23,7 @@ def initialize_grid(L, N):
     y = np.linspace(-L/2, L/2, N)
     X, Y = np.meshgrid(x, y)
     mask = X**2 + Y**2 < (L/2)**2 
-    index_grid = np.full((N, N), None)
+    index_grid = np.full((N, N), np.nan, dtype=float)
     circle_points = np.where(mask)
     num_circle_points = len(circle_points[0])
     index_grid[circle_points] = np.arange(num_circle_points)
@@ -51,16 +51,16 @@ def solve_circle_laplacian(L, N):
     """
     mask, index_grid = initialize_grid(L,N)
     num_circle_points = np.count_nonzero(mask)
-    laplacian = sp.lil_matrix((num_circle_points, num_circle_points), dtype= int)
+    laplacian = sp.lil_matrix((num_circle_points, num_circle_points))
     for i in range(N): 
         for j in range(N): 
-            if index_grid[i, j] != None:
-                idx = index_grid[i,j]
+            if not np.isnan(index_grid[i, j]):
+                idx = int(index_grid[i,j])
                 laplacian[idx, idx] = -4
                 for di, dj in  [(-1, 0), (1, 0), (0, -1), (0, 1)]: 
                     ni, nj = i + di, j + dj
-                    if 0 <= ni < N and 0 <= nj < N and index_grid[ni, nj] != None:
-                        laplacian[idx, index_grid[ni, nj]] = 1
+                    if 0 <= ni < N and 0 <= nj < N and not np.isnan(index_grid[ni, nj]):
+                        laplacian[idx, int(index_grid[ni, nj])] = 1
     
     eigenvalues, eigenvectors = la.eigh(laplacian.toarray())
 
@@ -74,12 +74,12 @@ def plot_eigenvectors(L, N, k):
     sorted_eigenvalue_indices = np.argsort(np.abs(eigenvalues))
 
     for i, ax in enumerate(axes.flat):
-        mode_values = np.zeros((N, N))  
-        mode_values[index_grid != None] = eigenvectors[:, sorted_eigenvalue_indices[i]]
+        mode_values = np.full((N, N), np.nan)
+        mode_values[~np.isnan(index_grid)] = eigenvectors[:, sorted_eigenvalue_indices[i]]
         ax.imshow(mode_values, extent=(-L/2, L/2, -L/2, L/2), origin="lower", cmap="bwr")
         ax.set_title(f"λ={eigenvalues[sorted_eigenvalue_indices[i]]:.4f}")
 
     plt.tight_layout()
     plt.show()
 
-plot_eigenvectors(L = 1, N = 50, k = 6)
+plot_eigenvectors(L=1, N=50, k=6)
