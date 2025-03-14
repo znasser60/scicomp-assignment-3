@@ -1,4 +1,4 @@
-ame: Tests
+name: Tests
 
 on:
   push: # Whenever new code enters the main branch
