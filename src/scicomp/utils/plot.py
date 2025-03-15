@@ -1,1 +1,1 @@
-"Plotting functions."
+"""Plotting functions."""
