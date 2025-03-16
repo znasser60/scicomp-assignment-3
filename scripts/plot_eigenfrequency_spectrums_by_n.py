@@ -4,38 +4,76 @@ import argparse
 
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
+from matplotlib.lines import Line2D
 
 from scicomp.eig_val_calc.circle import solve_circle_laplacian
 
 
-def main(max_n: int, quality_label: str):
+def main(min_n: int, max_n: int):
     """Plot spectrum of eigenfrequencies for varying N."""
     length = 1
-    min_n = 50
 
-    n_rows = (((max_n + 1) - min_n) // 20) + 1
-    fig, axes = plt.subplots(
-        n_rows, 1, figsize=(1.5, 4), sharex=True, sharey=True, constrained_layout=True
-    )
-    for ax, n in zip(axes.flatten(), np.arange(50, max_n + 1, 20), strict=True):
+    k1 = min_n - 1
+
+    data = {
+        "n": [],
+        "lambda": [],
+        "first_k1": [],
+    }
+    ns = [min_n, max_n]
+    for n in ns:
         k = n - 1
         eigenfrequencies, *_ = solve_circle_laplacian(
             length, n, k, use_sparse=True, shift_invert=True
         )
-        ax.hist(eigenfrequencies)
-        ax.set_ylabel(f"$N={n}$")
+        data["n"].extend(np.repeat(n, len(eigenfrequencies)).tolist())
+        data["lambda"].extend(eigenfrequencies.tolist())
+        first_k_mask = np.arange(len(eigenfrequencies)) >= k1
+        data["first_k1"].extend(first_k_mask.tolist())
 
-    axes[0].set_xlim(0, None)
+    fig, ax = plt.subplots(figsize=(3, 2), constrained_layout=True)
+    sns.swarmplot(
+        x=data["n"],
+        y=data["lambda"],
+        hue=data["first_k1"],
+        s=2.5,
+        legend=False,
+        ax=ax,
+    )
+
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    ax.set_ylim(0, None)
+
+    ax.set_xlabel("# Discretisation intervals")
+    ax.set_ylabel("$\\lambda_i$ (hz)")
+
+    handles = [
+        Line2D([], [], marker=".", color="tab:blue", linestyle="None"),
+        Line2D([], [], marker=".", color="tab:orange", linestyle="None"),
+    ]
+    ax.legend(
+        handles=handles,
+        labels=[f"$i < {min_n}$", f"$i \\geq {min_n}$"],
+        ncol=2,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.0),
+        fontsize=8,
+        labelspacing=0.2,
+        frameon=False,
+    )
 
     fig.savefig(
-        f"results/figures/eigenfrequency_spectrum_by_n_{quality_label}_quality.pdf",
+        "results/figures/eigenfrequency_spectrum_by_n.pdf",
         bbox_inches="tight",
     )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--min-n", type=int)
     parser.add_argument("--max-n", type=int)
-    parser.add_argument("--quality-label", type=str)
     args = parser.parse_args()
-    main(args.max_n, args.quality_label)
+    main(args.min_n, args.max_n)
