@@ -1,85 +1,156 @@
-import numpy as np
-import scipy.sparse as sp
-import scipy.linalg as la
+"""Eigensolver for the 2D wave equation on a circular domain."""
+
+from functools import partial
+
 import matplotlib.pyplot as plt
+import numpy as np
+import numpy.typing as npt
+import scipy.linalg as la
+import scipy.sparse as sp
+import scipy.sparse.linalg as sp_la
+from matplotlib.axes import Axes
+from matplotlib.image import AxesImage
 
-def initialize_grid(L, N): 
-    """
-    Initializes a 2D grid representing a circular domain.
 
-    This function creates a square N x N grid representing a domain with a circular region 
-    of diameter L. The points inside the circle are assigned unique index values starting from 0, 
-    while points outside the circle are set to None.
+def initialize_grid(L, N):
+    """Initializes a 2D grid representing a circular domain.
 
-    Returns: 
+    This function creates a square N x N grid representing a domain with a circular
+    region of diameter L. The points inside the circle are assigned unique index values
+    starting from 0, while points outside the circle are set to None.
+
+    Returns:
     mask : ndarray
-        Boolean mask indicating which points are inside the circular domain. 
+        Boolean mask indicating which points are inside the circular domain.
 
-    index_grid : ndarray 
-        2D array with indices starting from 0 for points inside the circle, and None 
+    index_grid : ndarray
+        2D array with indices starting from 0 for points inside the circle, and None
         for points outside.
     """
-    x = np.linspace(-L/2, L/2, N)
-    y = np.linspace(-L/2, L/2, N)
+    x = np.linspace(-L / 2, L / 2, N)
+    y = np.linspace(-L / 2, L / 2, N)
     X, Y = np.meshgrid(x, y)
-    mask = X**2 + Y**2 < (L/2)**2 
+    mask = X**2 + Y**2 < (L / 2) ** 2
     index_grid = np.full((N, N), np.nan, dtype=float)
     circle_points = np.where(mask)
     num_circle_points = len(circle_points[0])
     index_grid[circle_points] = np.arange(num_circle_points)
 
-    return mask, index_grid 
+    return mask, index_grid
 
-def solve_circle_laplacian(L, N): 
-    """
-    Constructs and solves the Laplace operator on a discretized circle 
-    using the central difference method.
 
-    The sparse Laplacian matrix is built such that the main diagonal is set to -4, 
+def solve_circle_laplacian(
+    length,
+    n: int,
+    k: int | None = None,
+    use_sparse: bool = False,
+    shift_invert: bool = False,
+):
+    """Solve eigenvalue Laplacian on a circular domain.
+
+    The sparse Laplacian matrix is built such that the main diagonal is set to -4,
     and the adjacent neighbors (up, down, left, right) are set to 1.
 
-    Returns: 
-    eigenvalues : ndarray 
-        The eigenvalues of the Laplacian matrix.
-    
-    eigenvectors : ndarray 
-        The eigenvectors corresponding to the eigenvalues.
-
-    index_grid : ndarray 
-        2D array with indices starting from 0 for points inside the circle, and None 
-        for points outside.
+    Returns:
+        Tuple containing the eigenfrequencies, eigenmodes (eigenvectors), and a
+        2D array with indices of cells which lie within the circle. The index matrix
+        is None for points outside the circle.
     """
-    mask, index_grid = initialize_grid(L,N)
+    if k is None:
+        k = n - 1
+    mask, index_grid = initialize_grid(length, n)
     num_circle_points = np.count_nonzero(mask)
-    laplacian = sp.lil_matrix((num_circle_points, num_circle_points))
-    for i in range(N): 
-        for j in range(N): 
+    if use_sparse:
+        if shift_invert:
+            eig_solver = partial(sp_la.eigsh, k=k, sigma=0)
+        else:
+            eig_solver = partial(sp_la.eigsh, k=k, which="SM")
+        laplacian = sp.lil_matrix((num_circle_points, num_circle_points))
+    else:
+        eig_solver = la.eigh
+        laplacian = np.zeros((num_circle_points, num_circle_points), dtype=np.int64)
+    for i in range(n):
+        for j in range(n):
             if not np.isnan(index_grid[i, j]):
-                idx = int(index_grid[i,j])
+                idx = int(index_grid[i, j])
                 laplacian[idx, idx] = -4
-                for di, dj in  [(-1, 0), (1, 0), (0, -1), (0, 1)]: 
+                for di, dj in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                     ni, nj = i + di, j + dj
-                    if 0 <= ni < N and 0 <= nj < N and not np.isnan(index_grid[ni, nj]):
+                    if 0 <= ni < n and 0 <= nj < n and not np.isnan(index_grid[ni, nj]):
                         laplacian[idx, int(index_grid[ni, nj])] = 1
-    
-    eigenvalues, eigenvectors = la.eigh(laplacian.toarray())
 
-    return eigenvalues, eigenvectors, index_grid
+    eigenvalues, eigenvectors = eig_solver(laplacian)
+    eigenfrequencies = (-eigenvalues) ** 0.5
 
-def plot_eigenvectors(L, N, k): 
+    sort_idx = np.argsort(np.abs(eigenvalues))[:k]
 
-    eigenvalues, eigenvectors, index_grid = solve_circle_laplacian(L, N)
-    _, axes = plt.subplots(2, k//2, figsize=(6, 6))
+    return eigenfrequencies[sort_idx], eigenvectors[:, sort_idx], index_grid
 
-    sorted_eigenvalue_indices = np.argsort(np.abs(eigenvalues))
 
-    for i, ax in enumerate(axes.flat):
-        mode_values = np.full((N, N), np.nan)
-        mode_values[~np.isnan(index_grid)] = eigenvectors[:, sorted_eigenvalue_indices[i]]
-        ax.imshow(mode_values, extent=(-L/2, L/2, -L/2, L/2), origin="lower", cmap="bwr")
-        ax.set_title(f"λ={eigenvalues[sorted_eigenvalue_indices[i]]:.4f}")
+def eval_oscillating_solution(
+    t: float | int,
+    mode: npt.NDArray[np.float64],
+    freq: float,
+    c: float = 1.0,
+    cosine_coef: float | int = 1.0,
+    sine_coef: float | int = 1.0,
+) -> npt.NDArray[np.float64]:
+    """Evaluate an eigensolution of the form K < 0 at a particular time.
 
-    plt.tight_layout()
-    plt.show()
+    Args:
+        t: Time-point to evaluate.
+        mode: Eigenmode as a vector.
+        freq: Eigenfrequency (sqrt(-K)) associated with the eigenmode.
+        c: Wave propagation velocity (m/s).
+        cosine_coef: Multiplication coefficient for the cosine term in T(t).
+        sine_coef: Multiplication coefficient for the sine term in T(t).
 
-plot_eigenvectors(L=1, N=50, k=6)
+    Returns:
+        Amplitude at time t, given the input eigenmode and eigenfrequency.
+        The returned vector has the same shape as the mode parameter.
+    """
+    if freq <= 0:
+        raise ValueError(f"Expected eigenfrequency λ > 0, received {freq:.4f}")
+
+    cosine_component = cosine_coef * np.cos(c * freq * t)
+    sine_component = sine_coef * np.sin(c * freq * t)
+    return mode * (cosine_component + sine_component)
+
+
+def plot_eigenmode(
+    mode: npt.NDArray[np.float64],
+    freq: float,
+    length: float,
+    n: int,
+    index_grid: npt.NDArray[np.int64],
+    ax: Axes | None = None,
+) -> AxesImage:
+    """Plot an eigenmode of a circular drum as a 2D heatmap.
+
+    Args:
+        mode: Eigenmode as a vector.
+        freq: Eigenfrequency (sqrt(-K)) associated with the eigenmode.
+        length: Diameter of the circular drum.
+        n: Number of discretisation intervals used to divide the cartesian axes.
+        index_grid: Matrix with shape NxN, with NaN in cells outside the circular
+            drum, and contiguous cell indexes in cells within the drum.
+        ax: (Optional) Matplotlib axis to plot onto. If not supplied, plot will
+            use the current global artist.
+
+    Returns:
+        AxesImage with 2D heatmap of the eigenmode.
+    """
+    if ax is None:
+        ax = plt.gca()
+
+    grid = np.full((n, n), np.nan)
+    grid[~np.isnan(index_grid)] = mode
+    im_ax = ax.imshow(
+        mode,
+        extent=(-length / 2, length / 2, -length / 2, length / 2),
+        origin="lower",
+        cmap="bwr",
+    )
+    ax.set_title(f"λ={freq:.4f}")
+
+    return im_ax
