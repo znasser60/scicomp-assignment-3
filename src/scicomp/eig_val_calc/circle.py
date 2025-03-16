@@ -65,10 +65,12 @@ def solve_circle_laplacian(
             eig_solver = partial(sp_la.eigsh, k=k, sigma=0)
         else:
             eig_solver = partial(sp_la.eigsh, k=k, which="SM")
-        laplacian = sp.lil_matrix((num_circle_points, num_circle_points))
+        laplacian = sp.lil_matrix(
+            (num_circle_points, num_circle_points), dtype=np.float64
+        )
     else:
         eig_solver = la.eigh
-        laplacian = np.zeros((num_circle_points, num_circle_points), dtype=np.int64)
+        laplacian = np.zeros((num_circle_points, num_circle_points), dtype=np.float64)
     for i in range(n):
         for j in range(n):
             if not np.isnan(index_grid[i, j]):
@@ -79,6 +81,8 @@ def solve_circle_laplacian(
                     if 0 <= ni < n and 0 <= nj < n and not np.isnan(index_grid[ni, nj]):
                         laplacian[idx, int(index_grid[ni, nj])] = 1
 
+    h = length / n
+    laplacian /= h**2
     eigenvalues, eigenvectors = eig_solver(laplacian)
     eigenfrequencies = (-eigenvalues) ** 0.5
 
