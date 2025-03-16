@@ -145,12 +145,16 @@ def plot_eigenmode(
 
     grid = np.full((n, n), np.nan)
     grid[~np.isnan(index_grid)] = mode
+    radius = length / 2
     im_ax = ax.imshow(
-        mode,
-        extent=(-length / 2, length / 2, -length / 2, length / 2),
+        grid,
+        extent=(-radius, radius, -radius, radius),
         origin="lower",
         cmap="bwr",
     )
+    extra_space = 1.1
+    ax.set_xlim(-radius * extra_space, radius * extra_space)
+    ax.set_ylim(-radius * extra_space, radius * extra_space)
     ax.set_title(f"λ={freq:.4f}")
 
     return im_ax
