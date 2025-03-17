@@ -49,8 +49,7 @@ def main():
     )
 
     fig.savefig("results/figures/spring_1d_energy.pdf", bbox_inches="tight")
-
-    plt.show()
+    fig.savefig("results/figures/spring_1d_energy.png", bbox_inches="tight")
 
 
 if __name__ == "__main__":

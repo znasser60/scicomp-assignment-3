@@ -18,7 +18,7 @@ def main():
     runtime = 5
 
     fig, ax = plt.subplots(figsize=(2.8, 2.8), constrained_layout=True)
-    ax.set_xlabel("Position ($m$)")
+    ax.set_xlabel("Displacement ($m$)")
     ax.set_ylabel("Velocity ($m/s$)")
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
@@ -49,6 +49,7 @@ def main():
     )
 
     fig.savefig("results/figures/spring_1d_phaseplot.pdf", bbox_inches="tight")
+    fig.savefig("results/figures/spring_1d_phaseplot.png", bbox_inches="tight")
 
 
 if __name__ == "__main__":
