@@ -1,4 +1,4 @@
-"""Eigensolver for the 2D wave equation on a circular domain."""
+"""Solves Eigenmodes and steady-state diffusion on a circular domain."""
 
 from functools import partial
 
@@ -12,7 +12,7 @@ from matplotlib.axes import Axes
 from matplotlib.image import AxesImage
 
 
-def initialize_grid(L, N):
+def initialize_grid(length, n):
     """Initializes a 2D grid representing a circular domain.
 
     This function creates a square N x N grid representing a domain with a circular
@@ -27,11 +27,11 @@ def initialize_grid(L, N):
         2D array with indices starting from 0 for points inside the circle, and None
         for points outside.
     """
-    x = np.linspace(-L / 2, L / 2, N)
-    y = np.linspace(-L / 2, L / 2, N)
+    x = np.linspace(-length / 2, length / 2, n)
+    y = np.linspace(-length / 2, length / 2, n)
     X, Y = np.meshgrid(x, y)
-    mask = X**2 + Y**2 < (L / 2) ** 2
-    index_grid = np.full((N, N), np.nan, dtype=float)
+    mask = (length / 2) ** 2 > X**2 + Y**2
+    index_grid = np.full((n, n), np.nan, dtype=float)
     circle_points = np.where(mask)
     num_circle_points = len(circle_points[0])
     index_grid[circle_points] = np.arange(num_circle_points)
@@ -51,10 +51,20 @@ def solve_circle_laplacian(
     The sparse Laplacian matrix is built such that the main diagonal is set to -4,
     and the adjacent neighbors (up, down, left, right) are set to 1.
 
+    length: Diameter of the circle domain
+    n: The number of grid points in each dimension
+    k: The number of eigenvalues/eigenvectors to compute for 
+        the Laplacian matrix. If None, it defaults to n-1.
+    use_sparse: If True, the sparse matrix solver is used 
+                for efficiency.
+    shift_invert: If True, a shift-invert method is used 
+                    in sparse eigenvalue computations.
+        
     Returns:
-        Tuple containing the eigenfrequencies, eigenmodes (eigenvectors), and a
-        2D array with indices of cells which lie within the circle. The index matrix
-        is None for points outside the circle.
+        Tuple containing the eigenfrequencies, eigenmodes (eigenvectors), a
+        2D array with indices of cells which lie within the circle, 
+        and the Laplacian matrix M. The index matrix is None for points outside 
+        the circle.
     """
     if k is None:
         k = n - 1
@@ -88,7 +98,7 @@ def solve_circle_laplacian(
 
     sort_idx = np.argsort(np.abs(eigenvalues))[:k]
 
-    return eigenfrequencies[sort_idx], eigenvectors[:, sort_idx], index_grid
+    return eigenfrequencies[sort_idx], eigenvectors[:, sort_idx], index_grid, laplacian
 
 
 def eval_oscillating_solution(
@@ -120,6 +130,51 @@ def eval_oscillating_solution(
     sine_component = sine_coef * np.sin(c * freq * t)
     return mode * (cosine_component + sine_component)
 
+def solve_circle_diffusion(
+    source_position: tuple, 
+    length,
+    n: int,
+    k: int | None = None, 
+    use_sparse: bool = False,
+    shift_invert: bool = False,
+    ): 
+    """Solves the steady state diffusion equation using direct methods (Mc = b).
+
+    Args:
+        source_position: Specified grid position of the source 
+        length: Diameter of the circle domain
+        n: The number of grid points in each dimension
+        k: The number of eigenvalues/eigenvectors to compute for 
+            the Laplacian matrix. If None, it defaults to n-1.
+        use_sparse: If True, the sparse matrix solver is used 
+                    for efficiency.
+        shift_invert: If True, a shift-invert method is used 
+                        in sparse eigenvalue computations.
+    
+    Returns:
+        c_grid: A 2D array representing the concentration distribution across the grid
+                on a circle domain.
+
+    """
+    mask, index_grid = initialize_grid(length,n)
+    _, _, _, laplacian = solve_circle_laplacian(length, n, k, use_sparse, shift_invert)
+    num_circle_points = np.count_nonzero(mask)
+    b = np.zeros(num_circle_points)
+    x, y = np.linspace(-length/2, length/2, n), np.linspace(-length/2, length/2, n)
+    source_idx = index_grid[np.argmin(np.abs(y - source_position[1])), 
+                            np.argmin(np.abs(x - source_position[0]))]
+    
+    source_idx = int(source_idx)
+    laplacian[source_idx, :] = 0  
+    laplacian[source_idx, source_idx] = 1  
+    b[source_idx] = 1
+
+    c = sp_la.spsolve(laplacian, b) if use_sparse else la.solve(laplacian, b)
+
+    c_grid = np.full((n, n), np.nan)
+    c_grid[mask] = c 
+
+    return c_grid
 
 def plot_eigenmode(
     mode: npt.NDArray[np.float64],
@@ -162,3 +217,15 @@ def plot_eigenmode(
     ax.set_title(f"λ={freq:.4f}")
 
     return im_ax
+
+def plot_circle_diffusion(n, c_grid, length):
+    """Plots the steady-state concentration solution on the circular domain."""
+    x = np.linspace(-length / 2, length / 2, n)
+    y = np.linspace(-length / 2, length / 2, n)
+    X, Y = np.meshgrid(x, y)
+    plt.figure(figsize=(8, 6))
+    plt.pcolormesh(X, Y, c_grid, cmap='YlOrRd', vmin=0, vmax=1)
+    plt.colorbar(label="Concentration c(x, y)")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.show()
