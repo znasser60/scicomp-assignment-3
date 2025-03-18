@@ -2,8 +2,8 @@
 
 import matplotlib.pyplot as plt
 
-from scicomp.utils.plot import plot_eigenmode
 from scicomp.eig_val_calc.solvers import solve_circle_laplacian
+from scicomp.utils.plot import plot_eigenmode
 
 
 def main():

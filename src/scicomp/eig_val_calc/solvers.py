@@ -1,14 +1,14 @@
-"""Space equation solvers for various shapes"""
+"""Space equation solvers for various shapes."""
 
 import logging
 
-from scicomp.utils.logging_config import setup_logging
 from scicomp.eig_val_calc.equation_solver_components.create_indexing import (
-    initialize_circular_grid
+    initialize_circular_grid,
 )
 from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
-    solve_laplacian
+    solve_laplacian,
 )
+from scicomp.utils.logging_config import setup_logging
 
 setup_logging()
 logger = logging.getLogger(__name__)

@@ -1,6 +1,7 @@
 """Create indexing for variously shaped surfaces."""
 
 import logging
+
 import numpy as np
 
 from scicomp.utils.logging_config import setup_logging

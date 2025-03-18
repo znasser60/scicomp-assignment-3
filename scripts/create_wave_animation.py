@@ -12,7 +12,7 @@ from matplotlib.animation import FuncAnimation
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
 from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
-    eval_oscillating_solution
+    eval_oscillating_solution,
 )
 from scicomp.eig_val_calc.solvers import solve_circle_laplacian
 

@@ -3,7 +3,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
-
 import seaborn as sns
 from matplotlib.axes import Axes
 from matplotlib.image import AxesImage
