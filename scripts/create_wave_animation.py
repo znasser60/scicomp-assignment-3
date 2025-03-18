@@ -171,7 +171,7 @@ def main(
         fps=fps,
     )
     ani.save(
-        f"circular_drum_k_{k}_{quality_label}_quality.mp4",
+        f"results/figures/circular_drum_k_{k}_{quality_label}_quality.mp4",
         dpi=dpi,
     )
 

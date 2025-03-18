@@ -43,7 +43,7 @@ def main():
         for spine in ax.spines.values():
             spine.set_visible(False)
 
-    fig.savefig("eigenmodes.pdf", bbox_inches="tight")
+    fig.savefig("results/figures/eigenmodes.pdf", bbox_inches="tight")
 
 
 if __name__ == "__main__":
