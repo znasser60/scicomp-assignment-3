@@ -32,21 +32,29 @@ def main():
     e_kinetic = calculate_kinetic_energy(states[:, 0], m)
     e_elastic = calculate_elastic_potential_energy(states[:, 1], k)
     e_total = calculate_spring_energy(states[:, 1], states[:, 0], k, m)
+    initial_energy = calculate_spring_energy(states[0, 1], states[0, 0], k, m)
 
     fig, ax = plt.subplots(figsize=(2.8, 2.8), constrained_layout=True)
     ax.set_xlabel("Time")
     ax.set_ylabel("Energy")
 
     time_points = np.linspace(0, runtime, states.shape[0])
-    ax.plot(time_points, e_kinetic, label="$E_k$")
-    ax.plot(time_points, e_elastic, label="$E_p$")
-    ax.plot(time_points, e_total, label="$E$")
+    ax.plot(time_points, e_kinetic, linewidth=1, label="$E_k$")
+    ax.plot(time_points, e_elastic, linewidth=1, label="$E_p$")
+    ax.plot(time_points, e_total, linewidth=1, label="$E$")
+    ax.axhline(
+        y=initial_energy,
+        linewidth=0.5,
+        linestyle="dashed",
+        color="black",
+        label="$E_0$",
+    )
 
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
     ax.legend(
-        ncol=3,
+        ncol=4,
         loc="lower center",
         bbox_to_anchor=(0.5, 1.0),
         fontsize=8,
