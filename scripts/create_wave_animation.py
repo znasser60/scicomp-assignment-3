@@ -12,7 +12,9 @@ from matplotlib.animation import FuncAnimation
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
 from scicomp.eig_val_calc.circle import (
+    construct_circle_laplacian,
     eval_oscillating_solution,
+    initialize_grid,
     solve_circle_laplacian,
 )
 
@@ -151,12 +153,10 @@ def main(
     use_sparse = True
     shift_invert = True
 
-    eigenfrequencies, eigenmodes, index_grid = solve_circle_laplacian(
-        length=length,
-        n=n,
-        k=k + 1,
-        use_sparse=use_sparse,
-        shift_invert=shift_invert,
+    _, index_grid = initialize_grid(length, n)
+    laplacian = construct_circle_laplacian(index_grid, length, n, use_sparse=use_sparse)
+    eigenfrequencies, eigenmodes = solve_circle_laplacian(
+        laplacian, n, k + 1, shift_invert=shift_invert
     )
 
     ani = animate_eigenmode(

@@ -7,7 +7,11 @@ import numpy as np
 import seaborn as sns
 from matplotlib.lines import Line2D
 
-from scicomp.eig_val_calc.circle import solve_circle_laplacian
+from scicomp.eig_val_calc.circle import (
+    construct_circle_laplacian,
+    initialize_grid,
+    solve_circle_laplacian,
+)
 
 
 def main(min_n: int, max_n: int):
@@ -24,9 +28,9 @@ def main(min_n: int, max_n: int):
     ns = [min_n, max_n]
     for n in ns:
         k = n - 1
-        eigenfrequencies, *_ = solve_circle_laplacian(
-            length, n, k, use_sparse=True, shift_invert=True
-        )
+        _, index_grid = initialize_grid(length, n)
+        laplacian = construct_circle_laplacian(index_grid, length, n, use_sparse=True)
+        eigenfrequencies, _ = solve_circle_laplacian(laplacian, n, k, shift_invert=True)
         data["n"].extend(np.repeat(n, len(eigenfrequencies)).tolist())
         data["lambda"].extend(eigenfrequencies.tolist())
         first_k_mask = np.arange(len(eigenfrequencies)) >= k1

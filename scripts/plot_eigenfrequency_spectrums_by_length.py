@@ -7,7 +7,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-from scicomp.eig_val_calc.circle import solve_circle_laplacian
+from scicomp.eig_val_calc.circle import (
+    construct_circle_laplacian,
+    initialize_grid,
+    solve_circle_laplacian,
+)
 
 
 def main(n_at_unit_length: int, quality_label: str):
@@ -23,9 +27,11 @@ def main(n_at_unit_length: int, quality_label: str):
     }
     for length in lengths:
         n = (length / h).numerator
-        eigenfrequencies, *_ = solve_circle_laplacian(
-            float(length), n, k, use_sparse=True, shift_invert=True
+        _, index_grid = initialize_grid(length, n)
+        laplacian = construct_circle_laplacian(
+            index_grid, float(length), n, use_sparse=True
         )
+        eigenfrequencies, _ = solve_circle_laplacian(laplacian, n, k, shift_invert=True)
         data["length"].extend(np.repeat(float(length), len(eigenfrequencies)).tolist())
         data["lambda"].extend(eigenfrequencies.tolist())
 
