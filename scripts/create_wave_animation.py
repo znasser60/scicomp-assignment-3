@@ -15,9 +15,6 @@ from scicomp.domains import Circle
 from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
     eval_oscillating_solution,
 )
-# from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
-#     eval_oscillating_solution
-# )
 
 
 def animate_eigenmode(
@@ -175,7 +172,7 @@ def main(
         fps=fps,
     )
     ani.save(
-        f"results/animations/circular_drum_k_{k}_{quality_label}_quality.mp4",
+        f"circular_drum_k_{k}_{quality_label}_quality.mp4",
         dpi=dpi,
     )
 
