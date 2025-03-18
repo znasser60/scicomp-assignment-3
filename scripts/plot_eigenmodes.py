@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 from scicomp.eig_val_calc.circle import (
     construct_circle_laplacian,
     initialize_grid,
-    plot_eigenmode,
     solve_circle_laplacian,
 )
+from scicomp.utils.plot import plot_eigenmode
 
 
 def main():

@@ -17,6 +17,9 @@ from scicomp.eig_val_calc.circle import (
     initialize_grid,
     solve_circle_laplacian,
 )
+# from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
+#     eval_oscillating_solution
+# )
 
 
 def animate_eigenmode(
