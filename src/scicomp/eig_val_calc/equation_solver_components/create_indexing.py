@@ -32,7 +32,7 @@ def initialize_circular_grid(length: float, n: int):
     x_range = np.linspace(-length / 2, length / 2, n)
     y_range = np.linspace(-length / 2, length / 2, n)
     x, y = np.meshgrid(x_range, y_range)
-    mask = x ** 2 + y ** 2 < (length / 2) ** 2
+    mask = x**2 + y**2 < (length / 2) ** 2
     index_grid = np.full((n, n), np.nan, dtype=np.float64)
     index_grid[mask] = np.arange(np.sum(mask))
 

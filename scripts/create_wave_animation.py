@@ -15,6 +15,9 @@ from scicomp.domains import Circle
 from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
     eval_oscillating_solution,
 )
+# from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
+#     eval_oscillating_solution
+# )
 
 
 def animate_eigenmode(

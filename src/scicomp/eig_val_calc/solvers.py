@@ -34,12 +34,7 @@ def solve_circle_laplacian(
     circular_index_grid = initialize_circular_grid(length, n)
 
     frequencies, eigenmodes = solve_laplacian(
-        length,
-        n,
-        circular_index_grid,
-        k,
-        use_sparse,
-        shift_invert
+        length, n, circular_index_grid, k, use_sparse, shift_invert
     )
 
     logger.info("Laplacian space equation is solved for circular domain.")
