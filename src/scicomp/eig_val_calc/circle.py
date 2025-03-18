@@ -68,9 +68,9 @@ def solve_circle_laplacian(
     num_circle_points = np.count_nonzero(mask)
     if use_sparse:
         if shift_invert:
-            eig_solver = partial(sp_la.eigsh, k=k, sigma=0)
+            eig_solver = partial(sp_la.eigsh, k=k, sigma=0, v0=np.ones(num_circle_points))
         else:
-            eig_solver = partial(sp_la.eigsh, k=k, which="SM")
+            eig_solver = partial(sp_la.eigsh, k=k, which="SM", v0=np.ones(num_circle_points))
         laplacian = sp.lil_matrix(
             (num_circle_points, num_circle_points), dtype=np.float64
         )
