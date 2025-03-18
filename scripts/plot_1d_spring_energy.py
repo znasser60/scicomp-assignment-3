@@ -34,9 +34,11 @@ def main():
     e_total = calculate_spring_energy(states[:, 1], states[:, 0], k, m)
     initial_energy = calculate_spring_energy(states[0, 1], states[0, 0], k, m)
 
-    fig, ax = plt.subplots(figsize=(2.8, 2.8), constrained_layout=True)
-    ax.set_xlabel("Time")
-    ax.set_ylabel("Energy")
+    fig, ax = plt.subplots(figsize=(2.8, 1.5), constrained_layout=True)
+    ax.set_xlabel("Time ($s$)")
+    ax.set_ylabel("Energy ($J$)")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
 
     time_points = np.linspace(0, runtime, states.shape[0])
     ax.plot(time_points, e_kinetic, linewidth=1, label="$E_k$")
@@ -50,13 +52,15 @@ def main():
         label="$E_0$",
     )
 
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
+    ax.set_xlim(0, runtime)
+    ax.set_ylim(0, None)
+    ax.ticklabel_format(axis="y", style="scientific", scilimits=(0, 0))
+    ax.yaxis.get_offset_text().set_fontsize(6)
 
     ax.legend(
         ncol=4,
         loc="lower center",
-        bbox_to_anchor=(0.5, 1.0),
+        bbox_to_anchor=(0.55, 1.0),
         fontsize=8,
         handlelength=1,
         labelspacing=0.2,
