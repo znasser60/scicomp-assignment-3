@@ -1,7 +1,7 @@
 """Frequency, eigenmod calculators and u(x, y, t) = v(x, y)T(t) evaluator."""
 
 import logging
-from typing import Callable, Tuple, Union, Optional
+from collections.abc import Callable
 from functools import partial
 
 import numpy as np
@@ -20,7 +20,7 @@ def solve_laplacian(
     length: float,
     n: int,
     index_grid: npt.NDArray[np.int64],
-    k: Optional[int] = None,
+    k: int | None = None,
     use_sparse: bool = False,
     shift_invert: bool = False,
 ):
@@ -75,11 +75,12 @@ def set_up_eig_solver_solver(
         k: int,
         use_sparse: bool = False,
         shift_invert: bool = False
-) -> Tuple[Callable, npt.NDArray[np.float64]]:
+) -> tuple[Callable, npt.NDArray[np.float64]]:
     """Sets up the eigenvalue solver function and the base for the matrix.
 
     Args:
         matrix_size_length: Size length of the square matrix.
+        k: Number of eigenvalues to compute.
         use_sparse: Boolean to use sparse solver of not.
         shift_invert: Boolean to use shift inverse or not.
         **kwargs: Additional keywords argument for the solver.
@@ -89,9 +90,11 @@ def set_up_eig_solver_solver(
     """
     if use_sparse:
         if shift_invert:
-            eig_solver = partial(sp_la.eigsh, k=k, sigma=0, v0=np.ones(matrix_size_length))
+            eig_solver = partial(sp_la.eigsh, k=k, sigma=0,
+                                 v0=np.ones(matrix_size_length))
         else:
-            eig_solver = partial(sp_la.eigsh, k=k, which="SM", v0=np.ones(matrix_size_length))
+            eig_solver = partial(sp_la.eigsh, k=k, which="SM",
+                                 v0=np.ones(matrix_size_length))
         laplacian = sp.lil_matrix(
             (matrix_size_length, matrix_size_length), dtype=np.float64
         )
@@ -104,7 +107,7 @@ def set_up_eig_solver_solver(
 
 def compute_laplacian_matrix(
         index_grid: npt.NDArray[np.int64],
-        laplacian: Union[npt.NDArray[np.float64], sp.lil_matrix],
+        laplacian: npt.NDArray[np.float64] | sp.lil_matrix,
 ) -> None:
     """Computes the Laplacian matrix (in place).
 
@@ -141,11 +144,11 @@ def compute_laplacian_matrix(
 
 
 def solve_eig_equation(
-        laplacian: Union[npt.NDArray[np.float64], sp.lil_matrix],
+        laplacian: npt.NDArray[np.float64] | sp.lil_matrix,
         eig_solver: Callable,
         k: int,
         h: float
-) -> Tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """Calculates the frequencies and the eigenmods.
 
     The equation the function solves is assumed to have the form: Mv = Kv, where M is
