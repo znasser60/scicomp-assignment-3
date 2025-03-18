@@ -1,5 +1,6 @@
 """Eigensolver for the 2D wave equation on a circular domain."""
 
+import logging
 from functools import partial
 
 import matplotlib.pyplot as plt
@@ -10,6 +11,11 @@ import scipy.sparse as sp
 import scipy.sparse.linalg as sp_la
 from matplotlib.axes import Axes
 from matplotlib.image import AxesImage
+
+from scicomp.utils.logging_config import setup_logging
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 
 def initialize_grid(L, N):
