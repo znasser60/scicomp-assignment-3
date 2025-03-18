@@ -20,8 +20,15 @@ def main():
     x0 = 10
     v0 = 0
     dt = Fraction(1, 100)
-    runtime = 5
-    states = simulate_oscillator(x0, v0, k, m, dt, runtime)
+    cycles = 2
+
+    osc_period = 2 * np.pi * (m / k) ** 0.5
+    runtime_frac = Fraction(
+        np.round(osc_period * cycles, decimals=2)
+    ).limit_denominator(100)
+    runtime = float(runtime_frac)
+
+    states = simulate_oscillator(x0, v0, k, m, dt, runtime_frac)
     e_kinetic = calculate_kinetic_energy(states[:, 0], m)
     e_elastic = calculate_elastic_potential_energy(states[:, 1], k)
     e_total = calculate_spring_energy(states[:, 1], states[:, 0], k, m)
