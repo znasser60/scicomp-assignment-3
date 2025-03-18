@@ -11,15 +11,10 @@ import numpy.typing as npt
 from matplotlib.animation import FuncAnimation
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
-from scicomp.eig_val_calc.circle import (
-    construct_circle_laplacian,
+from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
     eval_oscillating_solution,
-    initialize_grid,
-    solve_circle_laplacian,
 )
-# from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
-#     eval_oscillating_solution
-# )
+from scicomp.eig_val_calc.solvers import solve_circle_laplacian
 
 
 def animate_eigenmode(
@@ -156,10 +151,12 @@ def main(
     use_sparse = True
     shift_invert = True
 
-    _, index_grid = initialize_grid(length, n)
-    laplacian = construct_circle_laplacian(index_grid, length, n, use_sparse=use_sparse)
-    eigenfrequencies, eigenmodes = solve_circle_laplacian(
-        laplacian, n, k + 1, shift_invert=shift_invert
+    eigenfrequencies, eigenmodes, index_grid = solve_circle_laplacian(
+        length=length,
+        n=n,
+        k=k + 1,
+        use_sparse=use_sparse,
+        shift_invert=shift_invert,
     )
 
     ani = animate_eigenmode(
@@ -174,7 +171,7 @@ def main(
         fps=fps,
     )
     ani.save(
-        f"results/animations/circular_drum_k_{k}_{quality_label}_quality.mp4",
+        f"circular_drum_k_{k}_{quality_label}_quality.mp4",
         dpi=dpi,
     )
 

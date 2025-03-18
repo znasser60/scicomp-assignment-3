@@ -7,6 +7,7 @@ from scicomp.eig_val_calc.circle import (
     initialize_grid,
     solve_circle_laplacian,
 )
+from scicomp.eig_val_calc.solvers import solve_circle_laplacian
 from scicomp.utils.plot import plot_eigenmode
 
 
@@ -27,10 +28,8 @@ def main():
     axes[0, k - 1].set_ylabel("Square", rotation=0, labelpad=10, ha="left", va="center")
     axes[1, k - 1].set_ylabel("Rect.", rotation=0, labelpad=10, ha="left", va="center")
 
-    _, index_grid = initialize_grid(length, n)
-    laplacian = construct_circle_laplacian(index_grid, length, n, use_sparse=True)
-    eigenfrequencies, eigenmodes = solve_circle_laplacian(
-        laplacian, n, k, shift_invert=True
+    eigenfrequencies, eigenmodes, index_grid = solve_circle_laplacian(
+        length, n, k, use_sparse=True, shift_invert=True
     )
     axes[2, k - 1].set_ylabel("Circle", rotation=0, labelpad=10, ha="left", va="center")
     for i, ax in enumerate(axes[2]):
@@ -49,7 +48,7 @@ def main():
         for spine in ax.spines.values():
             spine.set_visible(False)
 
-    fig.savefig("results/figures/eigenmodes.pdf", bbox_inches="tight")
+    fig.savefig("eigenmodes.pdf", bbox_inches="tight")
 
 
 if __name__ == "__main__":
