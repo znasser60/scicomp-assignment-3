@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 
 from scicomp.utils.plot import plot_eigenmode
-from scicomp.eig_val_calc.circle import solve_circle_laplacian
+from scicomp.eig_val_calc.solvers import solve_circle_laplacian
 
 
 def main():
@@ -43,7 +43,7 @@ def main():
         for spine in ax.spines.values():
             spine.set_visible(False)
 
-    fig.savefig("results/figures/eigenmodes.pdf", bbox_inches="tight")
+    fig.savefig("eigenmodes.pdf", bbox_inches="tight")
 
 
 if __name__ == "__main__":

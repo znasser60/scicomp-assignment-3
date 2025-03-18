@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
-from scicomp.eig_val_calc.circle import solve_circle_laplacian
+from scicomp.eig_val_calc.solvers import solve_circle_laplacian
 
 
 def main(max_n: int, quality_label: str):

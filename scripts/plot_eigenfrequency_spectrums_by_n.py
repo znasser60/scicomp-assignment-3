@@ -7,7 +7,7 @@ import numpy as np
 import seaborn as sns
 from matplotlib.lines import Line2D
 
-from scicomp.eig_val_calc.circle import solve_circle_laplacian
+from scicomp.eig_val_calc.solvers import solve_circle_laplacian
 
 
 def main(min_n: int, max_n: int):

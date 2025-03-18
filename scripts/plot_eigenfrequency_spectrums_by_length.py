@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-from scicomp.eig_val_calc.circle import solve_circle_laplacian
+from scicomp.eig_val_calc.solvers import solve_circle_laplacian
 
 
 def main(n_at_unit_length: int, quality_label: str):
