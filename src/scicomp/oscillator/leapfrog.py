@@ -6,6 +6,26 @@ import numpy as np
 import numpy.typing as npt
 
 
+def is_leapfrog_oscillator_stable(dt: float, omega: float) -> bool:
+    """Check whether a leapfrog parameterisation is numerically stable.
+
+    The Leapfrog method is stable for the 1D harmonic oscillator when:
+
+        dt < omega/2
+
+    Args:
+        dt: Discrete time-step duration.
+        omega: Angular velocity (rad/s), defined by sqrt(k/m) where k is the
+            spring constant of the system (N/m) and m is the mass of the
+            object at the end of the spring (kg).
+
+    Returns:
+        Boolean value: True if dt is sufficiently small so as to guarantee stability,
+        and False otherwise.
+    """
+    return dt < omega / 2
+
+
 def simulate_oscillator(
     x0: float,
     v0: float,
@@ -28,6 +48,22 @@ def simulate_oscillator(
         Numpy array with shape (time, 2), where the first column contains
         velocity measurements, and the second contains position measurements.
     """
+    if not 1e-10 <= dt <= 10:
+        raise ValueError(
+            f"Discrete time-step duration must be within interval [1e-10s, 10s], "
+            f"found {dt}s."
+        )
+
+    if not 1e-10 <= k <= 1e5:
+        raise ValueError(
+            f"Spring constant `k` must be within interval [1e-10 N/m, 1e5 N/m], "
+            f"found {k} N/m."
+        )
+
+    if not 1e-10 <= m <= 1e5:
+        raise ValueError(
+            f"Mass `m` must be within interval [1e-10 kg, 1e5 kg], found {m} kg."
+        )
     n_steps_frac = runtime / dt
     if not n_steps_frac.is_integer():
         raise ValueError("`dt` does not divide `runtime`.")
@@ -37,6 +73,11 @@ def simulate_oscillator(
 
     # Precompute squared angular frequency
     omega_sq = k / m
+    if not is_leapfrog_oscillator_stable(delta_t, np.sqrt(omega_sq)):
+        raise ValueError(
+            "Discrete time-step duration `dt` is not sufficiently small to ensure "
+            "scheme stability. Expect 2*dt < angular frequency."
+        )
 
     # Calculate v_(1/2) and x_1 separately first
     vhalf = update_velocity(v0, x0, omega_sq, float(delta_t / 2))
