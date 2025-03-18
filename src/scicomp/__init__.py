@@ -7,3 +7,7 @@ direct and iterative methods.
 
 A command-line interface is included for easy access to these simulations.
 """
+
+from .utils import configure_mpl
+
+configure_mpl()
