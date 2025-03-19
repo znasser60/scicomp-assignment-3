@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-from scicomp.eig_val_calc.solvers import solve_circle_laplacian
+from scicomp.domains import Circle
 
 
 def main(n_at_unit_length: int, quality_label: str):
@@ -22,9 +22,10 @@ def main(n_at_unit_length: int, quality_label: str):
         "lambda": [],
     }
     for length in lengths:
+        domain = Circle(length)
         n = (length / h).numerator
-        eigenfrequencies, *_ = solve_circle_laplacian(
-            float(length), n, k, use_sparse=True, shift_invert=True
+        eigenfrequencies, _ = domain.solve_eigenproblem(
+            k, n, use_sparse=True, shift_invert=True
         )
         data["length"].extend(np.repeat(float(length), len(eigenfrequencies)).tolist())
         data["lambda"].extend(eigenfrequencies.tolist())

@@ -9,7 +9,7 @@ import numpy.typing as npt
 from matplotlib.axes import Axes
 from tqdm import tqdm
 
-from scicomp.eig_val_calc.solvers import solve_circle_laplacian
+from scicomp.domains import Circle
 
 """Z-score for 2 standard deviations."""
 Z2STDEV = 1.97
@@ -54,6 +54,7 @@ def measure_runtime(
     """
     runtime = np.empty((repeats, len(ns)), dtype=np.float64)
 
+    domain = Circle(length)
     for n_i, n in enumerate(ns):
         if prog_bar is not None:
             if use_sparse and shift_invert:
@@ -64,13 +65,16 @@ def measure_runtime(
                 mode = "dense"
             prog_bar.set_description(f"Measure eig-solver runtime ({mode=}, N={n})")
 
+        index_grid = domain.discretise(n)
+        laplacian = domain.construct_discrete_laplacian(
+            use_sparse=use_sparse, index_grid=index_grid
+        )
         for r in range(repeats):
             start = perf_counter()
-            solve_circle_laplacian(
-                length,
-                n,
+            domain.solve_eigenproblem(
                 k=n - 1,
-                use_sparse=use_sparse,
+                index_grid=index_grid,
+                laplacian=laplacian,
                 shift_invert=shift_invert,
             )
             duration = perf_counter() - start
