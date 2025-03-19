@@ -42,7 +42,7 @@ def plot_eigenmode(
     freq: float,
     length: float,
     n: int,
-    index_grid: npt.NDArray[np.int64],
+    index_grid: npt.NDArray[np.float64],
     ax: Axes | None = None,
 ) -> AxesImage:
     """Plot an eigenmode of a circular drum as a 2D heatmap.
@@ -63,7 +63,7 @@ def plot_eigenmode(
     if ax is None:
         ax = plt.gca()
 
-    grid = np.full((n, n), np.nan)
+    grid = np.full((n + 1, n + 1), np.nan)
     grid[~np.isnan(index_grid)] = mode
     radius = length / 2
     im_ax = ax.imshow(

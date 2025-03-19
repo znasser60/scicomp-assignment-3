@@ -60,21 +60,44 @@ def solve_laplacian(
     compute_laplacian_matrix(index_grid, laplacian)
 
     # Solve the equation
-    frequencies, eigenmodes = solve_eig_equation(
-        laplacian,
-        eig_solver,
-        k,
-        length / n
-    )
+    frequencies, eigenmodes = solve_eig_equation(laplacian, eig_solver, k, length / n)
 
     return frequencies, eigenmodes
 
 
+def select_solver(
+    ev_length: int,
+    k: int,
+    use_sparse: bool = False,
+    shift_invert: bool = False,
+) -> Callable:
+    """Sets up the eigenvalue solver function.
+
+    Args:
+        ev_length: Number of elements in solution eigenvectors.
+        k: Number of eigenvalues to compute.
+        use_sparse: Boolean to use sparse solver of not.
+        shift_invert: Boolean to use shift inverse or not.
+
+    Returns:
+        Solver function.
+    """
+    match use_sparse, shift_invert:
+        case False, _:
+            eig_solver = la.eigh
+        case True, False:
+            eig_solver = partial(sp_la.eigsh, k=k, sigma=0, v0=np.ones(ev_length))
+        case True, True:
+            eig_solver = partial(sp_la.eigsh, k=k, which="SM", v0=np.ones(ev_length))
+
+    return eig_solver
+
+
 def set_up_eig_solver_solver(
-        matrix_size_length: int,
-        k: int,
-        use_sparse: bool = False,
-        shift_invert: bool = False
+    matrix_size_length: int,
+    k: int,
+    use_sparse: bool = False,
+    shift_invert: bool = False,
 ) -> tuple[Callable, npt.NDArray[np.float64]]:
     """Sets up the eigenvalue solver function and the base for the matrix.
 
@@ -88,26 +111,20 @@ def set_up_eig_solver_solver(
     Returns:
         Solver function and the base matrix.
     """
+    eig_solver = select_solver(matrix_size_length, k, use_sparse, shift_invert)
     if use_sparse:
-        if shift_invert:
-            eig_solver = partial(sp_la.eigsh, k=k, sigma=0,
-                                 v0=np.ones(matrix_size_length))
-        else:
-            eig_solver = partial(sp_la.eigsh, k=k, which="SM",
-                                 v0=np.ones(matrix_size_length))
         laplacian = sp.lil_matrix(
             (matrix_size_length, matrix_size_length), dtype=np.float64
         )
     else:
-        eig_solver = la.eigh
         laplacian = np.zeros((matrix_size_length, matrix_size_length), dtype=np.float64)
 
     return eig_solver, laplacian
 
 
 def compute_laplacian_matrix(
-        index_grid: npt.NDArray[np.int64],
-        laplacian: npt.NDArray[np.float64] | sp.lil_matrix,
+    index_grid: npt.NDArray[np.int64],
+    laplacian: npt.NDArray[np.float64] | sp.lil_matrix,
 ) -> None:
     """Computes the Laplacian matrix (in place).
 
@@ -144,10 +161,10 @@ def compute_laplacian_matrix(
 
 
 def solve_eig_equation(
-        laplacian: npt.NDArray[np.float64] | sp.lil_matrix,
-        eig_solver: Callable,
-        k: int,
-        h: float
+    laplacian: npt.NDArray[np.float64] | sp.lil_matrix,
+    eig_solver: Callable,
+    k: int,
+    h: float,
 ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """Calculates the frequencies and the eigenmods.
 

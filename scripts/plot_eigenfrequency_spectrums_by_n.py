@@ -7,7 +7,7 @@ import numpy as np
 import seaborn as sns
 from matplotlib.lines import Line2D
 
-from scicomp.eig_val_calc.solvers import solve_circle_laplacian
+from scicomp.domains import Circle
 
 
 def main(min_n: int, max_n: int):
@@ -21,11 +21,12 @@ def main(min_n: int, max_n: int):
         "lambda": [],
         "first_k1": [],
     }
+    domain = Circle(length)
     ns = [min_n, max_n]
     for n in ns:
         k = n - 1
-        eigenfrequencies, *_ = solve_circle_laplacian(
-            length, n, k, use_sparse=True, shift_invert=True
+        eigenfrequencies, _ = domain.solve_eigenproblem(
+            k, n, use_sparse=True, shift_invert=True
         )
         data["n"].extend(np.repeat(n, len(eigenfrequencies)).tolist())
         data["lambda"].extend(eigenfrequencies.tolist())
