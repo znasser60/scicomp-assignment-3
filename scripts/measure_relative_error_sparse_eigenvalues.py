@@ -6,7 +6,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
-from scicomp.eig_val_calc.circle import solve_circle_laplacian
+from scicomp.eig_val_calc.circle import (
+    construct_circle_laplacian,
+    initialize_grid,
+    solve_circle_laplacian,
+)
 
 
 def main(max_n: int, quality_label: str):
@@ -32,17 +36,19 @@ def main(max_n: int, quality_label: str):
     dom_sparse_si = []
     ns = np.arange(5, max_n, 5)
     for n in tqdm(ns, desc="Compare eigensolver results"):
-        freqs, *_ = solve_circle_laplacian(
-            length, n, k, use_sparse=False, shift_invert=False
+        _, index_grid = initialize_grid(length, n)
+        dense_laplacian = construct_circle_laplacian(
+            index_grid, length, n, use_sparse=False
         )
+        freqs, _ = solve_circle_laplacian(dense_laplacian, n, k)
         dom_dense.append(freqs[0])
-        freqs, *_ = solve_circle_laplacian(
-            length, n, k, use_sparse=True, shift_invert=False
+
+        sparse_laplacian = construct_circle_laplacian(
+            index_grid, length, n, use_sparse=True
         )
+        freqs, _ = solve_circle_laplacian(sparse_laplacian, n, k)
         dom_sparse.append(freqs[0])
-        freqs, *_ = solve_circle_laplacian(
-            length, n, k, use_sparse=True, shift_invert=True
-        )
+        freqs, _ = solve_circle_laplacian(sparse_laplacian, n, k, shift_invert=True)
         dom_sparse_si.append(freqs[0])
 
     dom_dense = np.asarray(dom_dense)
