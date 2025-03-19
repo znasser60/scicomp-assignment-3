@@ -195,6 +195,9 @@ def solve_circle_diffusion(
         np.argmin(np.abs(x - source_position[0])),
     ]
 
+    if np.isnan(source_idx):
+        raise ValueError("Source position must be within the circle domain")
+
     source_idx = int(source_idx)
     laplacian[source_idx, :] = 0
     laplacian[source_idx, source_idx] = 1
