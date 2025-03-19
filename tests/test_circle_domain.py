@@ -6,7 +6,7 @@ from hypothesis import strategies as st
 from scicomp.eig_val_calc.circle import (
     initialize_grid,
     solve_circle_diffusion,
-    solve_circle_laplacian,
+    construct_circle_laplacian,
 )
 
 
@@ -25,13 +25,15 @@ def test_circle_grid_initialization(L, N):
 
 def test_laplacian_sparsity():
     """Ensure that each row of the Laplacian matrix has at most 5 nonzero values."""
-    L = 4
-    N = 150
-    _, _, _, laplacian = solve_circle_laplacian(L, N, use_sparse=True)
+    length = 4
+    n = 150
+    _, index_grid = initialize_grid(length, n)
+    laplacian = construct_circle_laplacian(index_grid, length, n, use_sparse=True)
     
-    row_counts = np.diff(laplacian.indptr)
     
-    assert not np.any(row_counts > 5), "Some rows have more than 5 nonzero entries"
+    row_counts = [len(row) for row in laplacian.rows]
+
+    assert np.all(np.array(row_counts) <= 5), "Some rows have more than 5 nonzero entries"
 
 
 def test_concenctration_grid_values():
@@ -53,4 +55,7 @@ def test_diffusion_source_outside_circle():
     
     with pytest.raises(ValueError):
         solve_circle_diffusion(source_position, length, n)
+
+if __name__ == "__main__":
+    pytest.main([ __file__])
 
