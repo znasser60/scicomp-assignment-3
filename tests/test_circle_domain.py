@@ -4,9 +4,9 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from scicomp.eig_val_calc.circle import (
+    construct_circle_laplacian,
     initialize_grid,
     solve_circle_diffusion,
-    construct_circle_laplacian,
 )
 
 
@@ -33,7 +33,7 @@ def test_laplacian_sparsity():
     
     row_counts = [len(row) for row in laplacian.rows]
 
-    assert np.all(np.array(row_counts) <= 5), "Some rows have more than 5 nonzero entries"
+    assert np.all(np.array(row_counts) <= 5), "Rows have more than 5 non-zero entries"
 
 
 def test_concenctration_grid_values():
