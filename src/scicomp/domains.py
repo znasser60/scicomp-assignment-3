@@ -220,12 +220,20 @@ class Domain(ABC):
 
     @property
     def width(self) -> Fraction:
-        """Physical domain width."""
+        """Physical domain width.
+
+        Given that the shape's with and height are the same,
+        otherwise it should be overridden in the shape specific domain class.
+        """
         return self._length
 
     @property
     def height(self) -> Fraction:
-        """Physical domain height."""
+        """Physical domain height.
+
+        Given that the shape's with and height are the same,
+        otherwise it should be overridden in the shape specific domain class.
+        """
         return self._length
 
     @property
@@ -287,3 +295,60 @@ class Circle(Domain):
     def y_max(self) -> float:
         """Maximum y-value contained within circle."""
         return self.length / 2
+
+
+class Rectangle(Domain):
+    """Rectangular domain, centered at the origin."""
+
+    def __init__(self, a_side: int | Fraction, b_side: int | Fraction | None = None):
+        """Initialisation of the Rectangle class.
+
+        Arguments are going to set based on the following logic:
+           ______________
+          |             |
+        b |             |
+          |_____________|
+                 a
+
+        In case the b_side is not specified during the initialisation, a square is
+        created with the side length equal a_side.
+        """
+        super().__init__(np.max([a_side, b_side]))
+        self.a_side = a_side
+        self.b_side = b_side if b_side is not None else a_side
+
+    def contains(
+        self, x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]
+    ) -> npt.NDArray[np.bool]:
+        """Create a mask of x,y values contained within the rectangle."""
+        return np.abs(x) < self.a_side / 2 and np.abs(y) < self.b_side / 2
+
+    @property
+    def x_min(self) -> float:
+        """Minimum x-value contained within rectangle."""
+        return -self.a_side / 2
+
+    @property
+    def x_max(self) -> float:
+        """Maximum x-value contained within rectangle."""
+        return self.a_side / 2
+
+    @property
+    def y_min(self) -> float:
+        """Minimum y-value contained within rectangle."""
+        return -self.b_side / 2
+
+    @property
+    def y_max(self) -> float:
+        """Maximum y-value contained within rectangle."""
+        return self.b_side / 2
+
+    @property
+    def width(self) -> Fraction:
+        """Physical domain width."""
+        return self.a_side
+
+    @property
+    def height(self) -> Fraction:
+        """Physical domain height."""
+        return self.b_side
