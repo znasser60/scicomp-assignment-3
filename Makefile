@@ -10,12 +10,12 @@ ifeq ($(QUALITY),low)
 	QUALITY_PARAMS_COMPARE_EIGENSOLVER_RUNTIME = --repeats 5 --timeout "0.25" --quality-label $(QUALITY)
 	QUALITY_PARAMS_COMPARE_EIGENSOLVER_RESULTS = --max-n 65 --quality-label $(QUALITY)
 	QUALITY_PARAMS_EIGENSPECTRUM_BY_LENGTH = --n-at-unit-length 50 --quality-label $(QUALITY)
-	QUALITY_PARAMS_WAVE_ANIMATION = --n 50 --animation-speed 1 --repeats 3 --fps 10 --dpi 100 --quality-label $(QUALITY)
+	QUALITY_PARAMS_WAVE_ANIMATION = --domain circle --n 50 --animation-speed 1 --repeats 3 --fps 10 --dpi 100 --quality-label $(QUALITY)
 else ifeq ($(QUALITY),high)
 	QUALITY_PARAMS_COMPARE_EIGENSOLVER_RUNTIME = --repeats 30 --timeout "4.0" --quality-label $(QUALITY)
 	QUALITY_PARAMS_COMPARE_EIGENSOLVER_RESULTS = --max-n 91 --quality-label $(QUALITY)
 	QUALITY_PARAMS_EIGENSPECTRUM_BY_LENGTH = --n-at-unit-length 100 --quality-label $(QUALITY)
-	QUALITY_PARAMS_WAVE_ANIMATION = --n 500 --animation-speed 10 --repeats 5 --fps 60 --dpi 200 --quality-label $(QUALITY)
+	QUALITY_PARAMS_WAVE_ANIMATION = --domain circle --n 500 --animation-speed 10 --repeats 5 --fps 60 --dpi 200 --quality-label $(QUALITY)
 else
 	$(error Invalid quality specifier: $(QUALITY). Choose 'low' or 'high'.)
 endif
@@ -71,7 +71,7 @@ $(FIGURES_DIR)/eigenfrequency_spectrum_by_n.pdf: \
 	$(ENTRYPOINT) scicomp plot eigenspectrum-by-n --min-n 20 --max-n 80
 
 $(ANIMATIONS_DIR)/circular_drum_k_%_$(QUALITY)_quality.mp4: \
-			scripts/create_wave_animation.py \
+			src/scicomp/cli/animations/create_wave_animation.py \
 			| $(ANIMATIONS_DIR)
 	$(ENTRYPOINT) scicomp animate eigenmode --k $* $(QUALITY_PARAMS_WAVE_ANIMATION)
 

@@ -1,7 +1,10 @@
 """Define shapes and functionality."""
 
+from __future__ import annotations
+
 import logging
 from abc import ABC, abstractmethod
+from enum import StrEnum
 from fractions import Fraction
 
 import numpy as np
@@ -13,6 +16,39 @@ from scicomp.utils.logging_config import setup_logging
 
 setup_logging()
 logger = logging.getLogger(__name__)
+
+
+class ShapeEnum(StrEnum):
+    """Enum corresponding to the different defined Domains."""
+
+    Square = "square"
+    Rectangle = "rectangle"
+    Circle = "circle"
+
+    def domain(
+        self, width: int | Fraction, height: int | Fraction | None = None
+    ) -> Domain:
+        """Construct a domain with the given shape."""
+        if height is not None and self != ShapeEnum.Rectangle:
+            logger.warning(
+                "`height` parameter has no effect for shapes other than Rectangle."
+            )
+        elif height is None and self == ShapeEnum.Rectangle:
+            logger.warning(
+                "No `height` parameter provided for shape `Rectangle`, "
+                "re-using `width`."
+            )
+            height = width
+
+        match self:
+            case ShapeEnum.Square:
+                d = Rectangle(width)
+            case ShapeEnum.Rectangle:
+                d = Rectangle(width, height)
+            case ShapeEnum.Circle:
+                d = Circle(width)
+
+        return d
 
 
 class Domain(ABC):

@@ -15,6 +15,8 @@ def eigenmodes():
     length = 1
     n = 200
     k = 4
+    use_sparse = True
+    shift_invert = True
 
     fig, axes = plt.subplots(
         3, k, figsize=(3, 2.5), sharex="row", sharey="row", constrained_layout=True
@@ -29,8 +31,9 @@ def eigenmodes():
     index_grid = domain.discretise(n)
     eigenfrequencies, eigenmodes = domain.solve_eigenproblem(
         k=k,
-        use_sparse=True,
-        shift_invert=True,
+        ny=n,
+        use_sparse=use_sparse,
+        shift_invert=shift_invert,
         index_grid=index_grid,
     )
     for i, ax in enumerate(axes[0]):
@@ -59,8 +62,9 @@ def eigenmodes():
     index_grid = domain.discretise(n)
     eigenfrequencies, eigenmodes = domain.solve_eigenproblem(
         k=k,
-        use_sparse=True,
-        shift_invert=True,
+        ny=n,
+        use_sparse=use_sparse,
+        shift_invert=shift_invert,
         index_grid=index_grid,
     )
     for i, ax in enumerate(axes[1]):
@@ -88,8 +92,9 @@ def eigenmodes():
     index_grid = domain.discretise(n)
     eigenfrequencies, eigenmodes = domain.solve_eigenproblem(
         k=k,
-        use_sparse=True,
-        shift_invert=True,
+        ny=n,
+        use_sparse=use_sparse,
+        shift_invert=shift_invert,
         index_grid=index_grid,
     )
     axes[2, k - 1].set_ylabel("Circle", rotation=0, labelpad=10, ha="left", va="center")
@@ -100,7 +105,6 @@ def eigenmodes():
             float(domain.width),
             float(domain.height),
             index_grid,
-            origin=(float(-domain.radius), float(-domain.radius)),
             ax=ax,
         )
         ax.set_title(f"$\\lambda = {eigenfrequencies[i]:.2f}$")

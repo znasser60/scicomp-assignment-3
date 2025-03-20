@@ -12,7 +12,7 @@ import typer
 from matplotlib.animation import FuncAnimation
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
-from scicomp.domains import Circle
+from scicomp.domains import ShapeEnum
 from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
     eval_oscillating_solution,
 )
@@ -22,6 +22,7 @@ app = typer.Typer()
 
 @app.command()
 def eigenmode(
+    shape: Annotated[ShapeEnum, typer.Option("--domain", help="Shape type.")],
     k: Annotated[int, typer.Option("--k", help="Number of eigenvalues to compute.")],
     n: Annotated[
         int,
@@ -52,17 +53,25 @@ def eigenmode(
             help="The quality of the plot, as specified in the file name.",
         ),
     ],
+    width: Annotated[int, typer.Option("--width", help="Physical width of shape.")] = 1,
+    height: Annotated[
+        int | None,
+        typer.Option(
+            "--height",
+            help="Physical height of shape (only applicable for rectangles).",
+        ),
+    ] = None,
 ):
     """Create animations."""
-    length = 1
     c = 1.0
     use_sparse = True
-    shift_invert = True
+    shift_invert = False
 
-    domain = Circle(length)
+    domain = shape.domain(width, height)
     index_grid = domain.discretise(n)
     eigenfrequencies, eigenmodes = domain.solve_eigenproblem(
         k=k + 1,
+        ny=n,
         index_grid=index_grid,
         use_sparse=use_sparse,
         shift_invert=shift_invert,
@@ -71,7 +80,7 @@ def eigenmode(
     ani = animate_eigenmode(
         eigenmodes[:, k],
         eigenfrequencies[k].item(),
-        length=length,
+        length=width,
         n=n,
         c=c,
         index_grid=index_grid,
@@ -161,44 +170,3 @@ def animate_eigenmode(
     )
 
     return ani
-
-
-# def main(
-#    k: int,
-#    n: int,
-#    animation_speed: float,
-#    repeats: int,
-#    fps: int,
-#    quality_label: str
-# ):
-#    """Create animations."""
-#    length = 1.0
-#    c = 1.0
-#    n = 500
-#    ks = np.concatenate([np.arange(10), np.array([38, 50, 51])], axis=0)
-#    ks = np.arange(10)
-#    fps = 10
-#    use_sparse = True
-#    shift_invert = True
-#
-#    eigenfrequencies, eigenmodes, index_grid = solve_circle_laplacian(
-#        length=length,
-#        n=n,
-#        k=max(ks) + 1,
-#        use_sparse=use_sparse,
-#        shift_invert=shift_invert,
-#    )
-#
-#    for k in ks:
-#        ani = animate_eigenmode(
-#            eigenmodes[:, k],
-#            eigenfrequencies[k].item(),
-#            length=length,
-#            n=n,
-#            c=c,
-#            index_grid=index_grid,
-#            animation_speed=animation_speed,
-#            repeats=repeats,
-#            fps=fps,
-#        )
-#        ani.save(f"circular_drum_k_{k}_{quality_label}_quality.mp4", dpi=100)
