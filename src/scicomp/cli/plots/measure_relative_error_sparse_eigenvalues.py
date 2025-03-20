@@ -12,8 +12,8 @@ from scicomp.domains import Circle
 app = typer.Typer()
 
 
-@app.command(name="measure_relative_error_sparse_eigenvalues")
-def main(
+@app.command()
+def compare_eigensolver_results(
     max_n: Annotated[int, typer.Option("--max-n")],
     quality_label: Annotated[
         str,

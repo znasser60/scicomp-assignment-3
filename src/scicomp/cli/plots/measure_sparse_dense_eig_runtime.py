@@ -18,8 +18,8 @@ Z2STDEV = 1.97
 app = typer.Typer()
 
 
-@app.command(name="measure_sparse_dense_eig_runtime")
-def main(
+@app.command()
+def compare_eigensolver_runtime(
     repeats: Annotated[
         int,
         typer.Option(

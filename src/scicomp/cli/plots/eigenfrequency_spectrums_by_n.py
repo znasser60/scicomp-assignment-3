@@ -13,8 +13,8 @@ from scicomp.domains import Circle
 app = typer.Typer()
 
 
-@app.command(name="eigenfrequency_spectrums_by_n")
-def main(
+@app.command()
+def eigenspectrum_by_n(
     min_n: Annotated[
         int,
         typer.Option(

@@ -9,8 +9,8 @@ from scicomp.utils.plot import plot_eigenmode
 app = typer.Typer()
 
 
-@app.command(name="eigenmodes")
-def main():
+@app.command()
+def eigenmodes():
     """Plot first k eigenmodes (columns) for each shape (rows)."""
     length = 1
     n = 200

@@ -28,4 +28,4 @@ app = typer.Typer(
 
 app.add_typer(version_app)
 app.add_typer(plot_app, name="plot")
-app.add_typer(animation_app, name="animation")
+app.add_typer(animation_app, name="animate")

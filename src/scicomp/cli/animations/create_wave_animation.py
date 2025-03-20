@@ -20,8 +20,8 @@ from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
 app = typer.Typer()
 
 
-@app.command(name="wave_animation")
-def main(
+@app.command()
+def eigenmode(
     k: Annotated[int, typer.Option("--k", help="Number of eigenvalues to compute.")],
     n: Annotated[
         int,
