@@ -65,7 +65,7 @@ def eigenmode(
     """Create animations."""
     c = 1.0
     use_sparse = True
-    shift_invert = False
+    shift_invert = True
 
     domain = shape.domain(width, height)
     index_grid = domain.discretise(n)

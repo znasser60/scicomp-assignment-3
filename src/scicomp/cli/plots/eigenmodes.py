@@ -13,19 +13,18 @@ app = typer.Typer()
 def eigenmodes():
     """Plot first k eigenmodes (columns) for each shape (rows)."""
     length = 1
-    n = 200
-    k = 4
+    n = 500
+    k = 5
     use_sparse = True
     shift_invert = True
 
     fig, axes = plt.subplots(
-        3, k, figsize=(3, 2.5), sharex="row", sharey="row", constrained_layout=True
+        3, k, figsize=(3.6, 2.5), sharex="row", sharey="row", constrained_layout=True
     )
 
     for ax in axes[:, k - 1]:
         ax.yaxis.set_label_position("right")
 
-    # TODO: Add square and rectangle
     axes[0, k - 1].set_ylabel("Rect.", rotation=0, labelpad=10, ha="left", va="center")
     domain = Rectangle(length * 2, length)
     index_grid = domain.discretise(n)
@@ -45,7 +44,7 @@ def eigenmodes():
             index_grid,
             ax=ax,
         )
-        ax.set_title(f"$\\lambda = {eigenfrequencies[i]:.2f}$")
+        ax.set_title(f"$\\omega = {eigenfrequencies[i]:.2f}$")
         ax.tick_params(
             axis="both",
             which="both",
@@ -76,7 +75,7 @@ def eigenmodes():
             index_grid,
             ax=ax,
         )
-        ax.set_title(f"$\\lambda = {eigenfrequencies[i]:.2f}$")
+        ax.set_title(f"$\\omega = {eigenfrequencies[i]:.2f}$")
         ax.tick_params(
             axis="both",
             which="both",
@@ -107,7 +106,7 @@ def eigenmodes():
             index_grid,
             ax=ax,
         )
-        ax.set_title(f"$\\lambda = {eigenfrequencies[i]:.2f}$")
+        ax.set_title(f"$\\omega = {eigenfrequencies[i]:.2f}$")
         ax.tick_params(
             axis="both",
             which="both",

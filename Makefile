@@ -8,7 +8,7 @@ QUALITY ?= low
 
 ifeq ($(QUALITY),low)
 	QUALITY_PARAMS_COMPARE_EIGENSOLVER_RUNTIME = --repeats 5 --timeout "0.25" --quality-label $(QUALITY)
-	QUALITY_PARAMS_COMPARE_EIGENSOLVER_RESULTS = --max-n 65 --quality-label $(QUALITY)
+	QUALITY_PARAMS_COMPARE_EIGENSOLVER_RESULTS = --max-n 66 --quality-label $(QUALITY)
 	QUALITY_PARAMS_EIGENSPECTRUM_BY_LENGTH = --n-at-unit-length 50 --quality-label $(QUALITY)
 	QUALITY_PARAMS_WAVE_ANIMATION = --domain circle --n 50 --animation-speed 1 --repeats 3 --fps 10 --dpi 100 --quality-label $(QUALITY)
 else ifeq ($(QUALITY),high)
@@ -51,22 +51,22 @@ $(FIGURES_DIR)/eigenmodes.pdf: \
 	$(ENTRYPOINT) scicomp plot eigenmodes
 
 $(FIGURES_DIR)/compare_runtime_eigensolvers_$(QUALITY)_quality.pdf: \
-			scripts/measure_sparse_dense_eig_runtime.py \
+			src/scicomp/cli/plots/measure_sparse_dense_eig_runtime.py \
 			| $(FIGURES_DIR)
 	$(ENTRYPOINT) scicomp plot compare-eigensolver-runtime $(QUALITY_PARAMS_COMPARE_EIGENSOLVER_RUNTIME)
 
 $(FIGURES_DIR)/compare_results_eigensolvers_$(QUALITY)_quality.pdf: \
-			scripts/measure_relative_error_sparse_eigenvalues.py \
+			src/scicomp/cli/plots/measure_relative_error_sparse_eigenvalues.py \
 			| $(FIGURES_DIR)
 	$(ENTRYPOINT) scicomp plot compare-eigensolver-results $(QUALITY_PARAMS_COMPARE_EIGENSOLVER_RESULTS)
 
 $(FIGURES_DIR)/eigenfrequency_spectrum_by_length_$(QUALITY)_quality.pdf: \
-			scripts/plot_eigenfrequency_spectrums_by_length.py \
+			src/scicomp/cli/plots/eigenfrequency_spectrums_by_length.py \
 			| $(FIGURES_DIR)
 	$(ENTRYPOINT) scicomp plot eigenspectrum-by-length $(QUALITY_PARAMS_EIGENSPECTRUM_BY_LENGTH)
 
 $(FIGURES_DIR)/eigenfrequency_spectrum_by_n.pdf: \
-			scripts/plot_eigenfrequency_spectrums_by_n.py \
+			src/scicomp/cli/plots/eigenfrequency_spectrums_by_n.py \
 			| $(FIGURES_DIR)
 	$(ENTRYPOINT) scicomp plot eigenspectrum-by-n --min-n 20 --max-n 80
 
