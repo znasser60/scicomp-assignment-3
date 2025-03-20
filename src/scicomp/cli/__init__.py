@@ -23,6 +23,7 @@ reproducible manner.
 app = typer.Typer(
     rich_markup_mode="rich",
     help=cli_desc,
+    no_args_is_help=True,
 )
 
 app.add_typer(version_app)

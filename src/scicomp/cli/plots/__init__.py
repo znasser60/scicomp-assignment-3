@@ -12,7 +12,7 @@ from .measure_sparse_dense_eig_runtime import (
     app as measure_sparse_dense_eig_runtime_app,
 )
 
-app = typer.Typer()
+app = typer.Typer(no_args_is_help=True)
 
 app.add_typer(measure_rel_err_spars_eigval_app)
 app.add_typer(measure_sparse_dense_eig_runtime_app)
