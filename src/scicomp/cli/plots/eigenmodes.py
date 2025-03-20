@@ -1,12 +1,16 @@
 """Plot first few eigenmodes for each shape."""
 
 import matplotlib.pyplot as plt
+import typer
 
 from scicomp.domains import Circle
 from scicomp.utils.plot import plot_eigenmode
 
+app = typer.Typer()
 
-def main():
+
+@app.command()
+def eigenmodes():
     """Plot first k eigenmodes (columns) for each shape (rows)."""
     length = 1
     n = 200
@@ -48,8 +52,4 @@ def main():
         for spine in ax.spines.values():
             spine.set_visible(False)
 
-    fig.savefig("eigenmodes.pdf", bbox_inches="tight")
-
-
-if __name__ == "__main__":
-    main()
+    fig.savefig("results/figures/eigenmodes.pdf", bbox_inches="tight")

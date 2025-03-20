@@ -1,13 +1,14 @@
 """Animations of eigenmode solutions to 2D wave equation on a circular domain."""
 
-import argparse
 import math
 import typing
 from functools import partial
+from typing import Annotated
 
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
+import typer
 from matplotlib.animation import FuncAnimation
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
@@ -15,6 +16,73 @@ from scicomp.domains import Circle
 from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
     eval_oscillating_solution,
 )
+
+app = typer.Typer()
+
+
+@app.command()
+def eigenmode(
+    k: Annotated[int, typer.Option("--k", help="Number of eigenvalues to compute.")],
+    n: Annotated[
+        int,
+        typer.Option(
+            "--n", help="Number of intervals used to divide the cartesian axes."
+        ),
+    ],
+    animation_speed: Annotated[
+        float,
+        typer.Option(
+            "--animation-speed",
+            help="Speed at which to display animation, default is 1 T/s where T is the "
+            "period of oscillation.",
+        ),
+    ],
+    repeats: Annotated[
+        int,
+        typer.Option(
+            "--repeats", help="Number of complete oscillations to show in animation."
+        ),
+    ],
+    fps: Annotated[int, typer.Option("--fps", help="Framerate of animation.")],
+    dpi: Annotated[int, typer.Option("--dpi", help="DPI of animation.")],
+    quality_label: Annotated[
+        str,
+        typer.Option(
+            "--quality-label",
+            help="The quality of the plot, as specified in the file name.",
+        ),
+    ],
+):
+    """Create animations."""
+    length = 1
+    c = 1.0
+    use_sparse = True
+    shift_invert = True
+
+    domain = Circle(length)
+    index_grid = domain.discretise(n)
+    eigenfrequencies, eigenmodes = domain.solve_eigenproblem(
+        k=k + 1,
+        index_grid=index_grid,
+        use_sparse=use_sparse,
+        shift_invert=shift_invert,
+    )
+
+    ani = animate_eigenmode(
+        eigenmodes[:, k],
+        eigenfrequencies[k].item(),
+        length=length,
+        n=n,
+        c=c,
+        index_grid=index_grid,
+        animation_speed=animation_speed,
+        repeats=repeats,
+        fps=fps,
+    )
+    ani.save(
+        f"results/animations/circular_drum_k_{k}_{quality_label}_quality.mp4",
+        dpi=dpi,
+    )
 
 
 def animate_eigenmode(
@@ -134,65 +202,3 @@ def animate_eigenmode(
 #            fps=fps,
 #        )
 #        ani.save(f"circular_drum_k_{k}_{quality_label}_quality.mp4", dpi=100)
-
-
-def main(
-    k: int,
-    n: int,
-    animation_speed: float,
-    repeats: int,
-    fps: int,
-    dpi: int,
-    quality_label: str,
-):
-    """Create animations."""
-    length = 1
-    c = 1.0
-    use_sparse = True
-    shift_invert = True
-
-    domain = Circle(length)
-    index_grid = domain.discretise(n)
-    eigenfrequencies, eigenmodes = domain.solve_eigenproblem(
-        k=k + 1,
-        index_grid=index_grid,
-        use_sparse=use_sparse,
-        shift_invert=shift_invert,
-    )
-
-    ani = animate_eigenmode(
-        eigenmodes[:, k],
-        eigenfrequencies[k].item(),
-        length=length,
-        n=n,
-        c=c,
-        index_grid=index_grid,
-        animation_speed=animation_speed,
-        repeats=repeats,
-        fps=fps,
-    )
-    ani.save(
-        f"circular_drum_k_{k}_{quality_label}_quality.mp4",
-        dpi=dpi,
-    )
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--k", type=int)
-    parser.add_argument("--n", type=int)
-    parser.add_argument("--animation-speed", type=float)
-    parser.add_argument("--repeats", type=int)
-    parser.add_argument("--fps", type=int)
-    parser.add_argument("--dpi", type=int)
-    parser.add_argument("--quality-label", type=str)
-    args = parser.parse_args()
-    main(
-        k=args.k,
-        n=args.n,
-        animation_speed=args.animation_speed,
-        repeats=args.repeats,
-        fps=args.fps,
-        dpi=args.dpi,
-        quality_label=args.quality_label,
-    )
