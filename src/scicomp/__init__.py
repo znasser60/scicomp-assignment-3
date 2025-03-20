@@ -10,4 +10,6 @@ A command-line interface is included for easy access to these simulations.
 
 from .utils import configure_mpl
 
+__version__ = "0.1.0"
+
 configure_mpl()
