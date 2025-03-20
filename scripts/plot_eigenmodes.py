@@ -2,12 +2,8 @@
 
 import matplotlib.pyplot as plt
 
-from scicomp.eig_val_calc.circle import (
-    construct_circle_laplacian,
-    initialize_grid,
-    plot_eigenmode,
-    solve_circle_laplacian,
-)
+from scicomp.domains import Circle
+from scicomp.utils.plot import plot_eigenmode
 
 
 def main():
@@ -27,10 +23,13 @@ def main():
     axes[0, k - 1].set_ylabel("Square", rotation=0, labelpad=10, ha="left", va="center")
     axes[1, k - 1].set_ylabel("Rect.", rotation=0, labelpad=10, ha="left", va="center")
 
-    _, index_grid = initialize_grid(length, n)
-    laplacian = construct_circle_laplacian(index_grid, length, n, use_sparse=True)
-    eigenfrequencies, eigenmodes = solve_circle_laplacian(
-        laplacian, n, k, shift_invert=True
+    domain = Circle(length)
+    index_grid = domain.discretise(n)
+    eigenfrequencies, eigenmodes = domain.solve_eigenproblem(
+        k=k,
+        use_sparse=True,
+        shift_invert=True,
+        index_grid=index_grid,
     )
     axes[2, k - 1].set_ylabel("Circle", rotation=0, labelpad=10, ha="left", va="center")
     for i, ax in enumerate(axes[2]):

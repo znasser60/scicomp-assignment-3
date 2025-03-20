@@ -11,11 +11,9 @@ import numpy.typing as npt
 from matplotlib.animation import FuncAnimation
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
-from scicomp.eig_val_calc.circle import (
-    construct_circle_laplacian,
+from scicomp.domains import Circle
+from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
     eval_oscillating_solution,
-    initialize_grid,
-    solve_circle_laplacian,
 )
 
 
@@ -57,7 +55,7 @@ def animate_eigenmode(
     frame_times = np.linspace(0, period, n_frames)
 
     # Prepare coordinates for drum
-    x = np.linspace(-length / 2, length / 2, n)
+    x = np.linspace(-length / 2, length / 2, n + 1)
     y = x.copy()
     X, Y = np.meshgrid(x, y)
 
@@ -73,7 +71,7 @@ def animate_eigenmode(
     max_val = 1.5 * max_abs_v
 
     ax.set_zlim(2 * min_val, 2 * max_val)
-    amplitude = np.full((n, n), np.nan)
+    amplitude = np.full((n + 1, n + 1), np.nan)
     amplitude[~np.isnan(index_grid)] = solve(0)
     ax.plot_surface(X, Y, amplitude, cmap="coolwarm", vmin=min_val, vmax=max_val)
 
@@ -148,15 +146,18 @@ def main(
     quality_label: str,
 ):
     """Create animations."""
-    length = 1.0
+    length = 1
     c = 1.0
     use_sparse = True
     shift_invert = True
 
-    _, index_grid = initialize_grid(length, n)
-    laplacian = construct_circle_laplacian(index_grid, length, n, use_sparse=use_sparse)
-    eigenfrequencies, eigenmodes = solve_circle_laplacian(
-        laplacian, n, k + 1, shift_invert=shift_invert
+    domain = Circle(length)
+    index_grid = domain.discretise(n)
+    eigenfrequencies, eigenmodes = domain.solve_eigenproblem(
+        k=k + 1,
+        index_grid=index_grid,
+        use_sparse=use_sparse,
+        shift_invert=shift_invert,
     )
 
     ani = animate_eigenmode(
