@@ -107,6 +107,7 @@ def measure_runtime(
             start = perf_counter()
             domain.solve_eigenproblem(
                 k=n - 1,
+                ny=n,
                 index_grid=index_grid,
                 laplacian=laplacian,
                 shift_invert=shift_invert,
