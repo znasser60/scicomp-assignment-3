@@ -32,7 +32,7 @@ def eigenmode(
     animation_speed: Annotated[
         float,
         typer.Option(
-            "--animation_speed",
+            "--animation-speed",
             help="Speed at which to display animation, default is 1 T/s where T is the "
             "period of oscillation.",
         ),
@@ -48,7 +48,7 @@ def eigenmode(
     quality_label: Annotated[
         str,
         typer.Option(
-            "--quality_label",
+            "--quality-label",
             help="The quality of the plot, as specified in the file name.",
         ),
     ],

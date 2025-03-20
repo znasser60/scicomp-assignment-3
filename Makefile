@@ -48,32 +48,32 @@ serial: $(SERIAL_FIGURES)
 $(FIGURES_DIR)/eigenmodes.pdf: \
 			scripts/plot_eigenmodes.py \
 			| $(FIGURES_DIR)
-	$(ENTRYPOINT) scripts/plot_eigenmodes.py
+	$(ENTRYPOINT) scicomp plot eigenmodes
 
 $(FIGURES_DIR)/compare_runtime_eigensolvers_$(QUALITY)_quality.pdf: \
 			scripts/measure_sparse_dense_eig_runtime.py \
 			| $(FIGURES_DIR)
-	$(ENTRYPOINT) scripts/measure_sparse_dense_eig_runtime.py $(QUALITY_PARAMS_COMPARE_EIGENSOLVER_RUNTIME)
+	$(ENTRYPOINT) scicomp plot compare-eigensolver-runtime $(QUALITY_PARAMS_COMPARE_EIGENSOLVER_RUNTIME)
 
 $(FIGURES_DIR)/compare_results_eigensolvers_$(QUALITY)_quality.pdf: \
 			scripts/measure_relative_error_sparse_eigenvalues.py \
 			| $(FIGURES_DIR)
-	$(ENTRYPOINT) scripts/measure_relative_error_sparse_eigenvalues.py $(QUALITY_PARAMS_COMPARE_EIGENSOLVER_RESULTS)
+	$(ENTRYPOINT) scicomp plot compare-eigensolver-results $(QUALITY_PARAMS_COMPARE_EIGENSOLVER_RESULTS)
 
 $(FIGURES_DIR)/eigenfrequency_spectrum_by_length_$(QUALITY)_quality.pdf: \
 			scripts/plot_eigenfrequency_spectrums_by_length.py \
 			| $(FIGURES_DIR)
-	$(ENTRYPOINT) scripts/plot_eigenfrequency_spectrums_by_length.py $(QUALITY_PARAMS_EIGENSPECTRUM_BY_LENGTH)
+	$(ENTRYPOINT) scicomp plot eigenspectrum-by-length $(QUALITY_PARAMS_EIGENSPECTRUM_BY_LENGTH)
 
 $(FIGURES_DIR)/eigenfrequency_spectrum_by_n.pdf: \
 			scripts/plot_eigenfrequency_spectrums_by_n.py \
 			| $(FIGURES_DIR)
-	$(ENTRYPOINT) scripts/plot_eigenfrequency_spectrums_by_n.py --min-n 20 --max-n 80
+	$(ENTRYPOINT) scicomp plot eigenspectrum-by-n --min-n 20 --max-n 80
 
 $(ANIMATIONS_DIR)/circular_drum_k_%_$(QUALITY)_quality.mp4: \
 			scripts/create_wave_animation.py \
 			| $(ANIMATIONS_DIR)
-	$(ENTRYPOINT) scripts/create_wave_animation.py --k $* $(QUALITY_PARAMS_WAVE_ANIMATION)
+	$(ENTRYPOINT) scicomp animate eigenmode --k $* $(QUALITY_PARAMS_WAVE_ANIMATION)
 
 
 
