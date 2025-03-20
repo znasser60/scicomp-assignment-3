@@ -27,7 +27,7 @@ class Domain(ABC):
     def solve_eigenproblem(
         self,
         k: int,
-        ny: int | None = None,
+        ny: int,
         use_sparse: bool = True,
         shift_invert: bool = True,
         index_grid: npt.NDArray[np.float64] | None = None,
@@ -54,7 +54,7 @@ class Domain(ABC):
             laplacian = self.construct_discrete_laplacian(
                 ny=ny,
                 use_sparse=use_sparse,
-                divide_stepsize=True,
+                divide_stepsize=False,
                 index_grid=index_grid,
             )
         else:
@@ -67,9 +67,10 @@ class Domain(ABC):
             shift_invert=shift_invert,
         )
 
-        # Calculate frequencies and eigenmods
         eigenvalues, eigenvectors = solver(laplacian)
-        eigenfrequencies = (-eigenvalues) ** 0.5
+
+        # Eigenfrequency is sqrt(-λ)/h = sqrt(-λ) * n / length..
+        eigenfrequencies = ((-eigenvalues) ** 0.5) * (ny / self.length)
 
         # Determine how many of the should be returned
         sort_idx = np.argsort(np.abs(eigenvalues))[:k]
@@ -130,7 +131,7 @@ class Domain(ABC):
 
         if divide_stepsize:
             h = self.calculate_step_size(ny)
-            laplacian /= float(h) ** 2
+            laplacian /= float(h**2)
 
         return laplacian
 
