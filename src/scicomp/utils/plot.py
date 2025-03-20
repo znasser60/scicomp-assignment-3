@@ -40,9 +40,10 @@ def configure_mpl():
 def plot_eigenmode(
     mode: npt.NDArray[np.float64],
     freq: float,
-    length: float,
-    n: int,
+    width: float,
+    height: float,
     index_grid: npt.NDArray[np.float64],
+    origin: tuple[float, float] = (0.0, 0.0),
     ax: Axes | None = None,
 ) -> AxesImage:
     """Plot an eigenmode of a circular drum as a 2D heatmap.
@@ -50,10 +51,13 @@ def plot_eigenmode(
     Args:
         mode: Eigenmode as a vector.
         freq: Eigenfrequency (sqrt(-K)) associated with the eigenmode.
-        length: Diameter of the circular drum.
-        n: Number of discretisation intervals used to divide the cartesian axes.
+        width: Width of the shape.
+        height: Height of the shape.
+        nx: Number of discretisation intervals used to divide the x-axis.
+        ny: Number of discretisation intervals used to divide the y-axis.
         index_grid: Matrix with shape NxN, with NaN in cells outside the circular
             drum, and contiguous cell indexes in cells within the drum.
+        origin: Lower left corner of the shape in physical coordinates.
         ax: (Optional) Matplotlib axis to plot onto. If not supplied, plot will
             use the current global artist.
 
@@ -63,18 +67,20 @@ def plot_eigenmode(
     if ax is None:
         ax = plt.gca()
 
-    grid = np.full((n + 1, n + 1), np.nan)
+    ny, nx = index_grid.shape
+
+    grid = np.full((ny, nx), np.nan)
     grid[~np.isnan(index_grid)] = mode
-    radius = length / 2
+    y0, x0 = origin
     im_ax = ax.imshow(
         grid,
-        extent=(-radius, radius, -radius, radius),
+        extent=(x0, width, y0, height),
         origin="lower",
         cmap="bwr",
     )
-    extra_space = 1.1
-    ax.set_xlim(-radius * extra_space, radius * extra_space)
-    ax.set_ylim(-radius * extra_space, radius * extra_space)
+    # extra_space = 1.1
+    # ax.set_xlim(-radius * extra_space, radius * extra_space)
+    # ax.set_ylim(-radius * extra_space, radius * extra_space)
     ax.set_title(f"λ={freq:.4f}")
 
     return im_ax
