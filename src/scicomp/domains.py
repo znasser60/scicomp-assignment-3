@@ -313,35 +313,38 @@ class Rectangle(Domain):
         In case the b_side is not specified during the initialisation, a square is
         created with the side length equal a_side.
         """
-        super().__init__(np.max([a_side, b_side]))
-        self.a_side = a_side
-        self.b_side = b_side if b_side is not None else a_side
+        b_side = b_side or a_side
+        super().__init__(max(a_side, b_side))
+        self.a_side = Fraction(a_side)
+        self.b_side = Fraction(b_side)
 
     def contains(
         self, x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]
     ) -> npt.NDArray[np.bool]:
         """Create a mask of x,y values contained within the rectangle."""
-        return np.abs(x) < self.a_side / 2 and np.abs(y) < self.b_side / 2
+        return (np.abs(x) < float(self.a_side) / 2) & (
+            np.abs(y) < float(self.b_side) / 2
+        )
 
     @property
     def x_min(self) -> float:
         """Minimum x-value contained within rectangle."""
-        return -self.a_side / 2
+        return float(-self.a_side / 2)
 
     @property
     def x_max(self) -> float:
         """Maximum x-value contained within rectangle."""
-        return self.a_side / 2
+        return float(self.a_side / 2)
 
     @property
     def y_min(self) -> float:
         """Minimum y-value contained within rectangle."""
-        return -self.b_side / 2
+        return float(-self.b_side / 2)
 
     @property
     def y_max(self) -> float:
         """Maximum y-value contained within rectangle."""
-        return self.b_side / 2
+        return float(self.b_side / 2)
 
     @property
     def width(self) -> Fraction:

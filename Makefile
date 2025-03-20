@@ -46,7 +46,7 @@ all: $(FIGURES) $(ANIMATIONS)
 serial: $(SERIAL_FIGURES)
 
 $(FIGURES_DIR)/eigenmodes.pdf: \
-			scripts/plot_eigenmodes.py \
+			src/scicomp/cli/plots/eigenmodes.py \
 			| $(FIGURES_DIR)
 	$(ENTRYPOINT) scicomp plot eigenmodes
 
