@@ -136,15 +136,15 @@ class Domain(ABC):
                 raise ValueError("Exactly one of `ny`, `index_grid` must be provided.")
             index_grid = self.discretise(ny)
         if ny is None:
-            ny = index_grid.shape[0]
-        nx = index_grid.shape[1]
+            ny = index_grid.shape[0] - 1
+        nx = index_grid.shape[1] - 1
         assert ny is not None
 
         n_points = self.discretisation_size(index_grid=index_grid)
         matrix_type = sp.lil_matrix if use_sparse else np.zeros
         laplacian = matrix_type((n_points, n_points), dtype=np.float64)
-        for i in range(ny):
-            for j in range(nx):
+        for i in range(ny + 1):
+            for j in range(nx + 1):
                 # Ensure the point is part of the shape
                 if np.isnan(index_grid[i, j]):
                     continue
@@ -159,8 +159,8 @@ class Domain(ABC):
 
                     # Check if the neighbour exists (if not bound condition applied)
                     if (
-                        0 <= ni < ny
-                        and 0 <= nj < nx
+                        0 <= ni < ny + 1
+                        and 0 <= nj < nx + 1
                         and not np.isnan(index_grid[ni, nj])
                     ):
                         laplacian[idx, int(index_grid[ni, nj])] = 1
