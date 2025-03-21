@@ -1,7 +1,10 @@
 """Define shapes and functionality."""
 
+from __future__ import annotations
+
 import logging
 from abc import ABC, abstractmethod
+from enum import StrEnum
 from fractions import Fraction
 
 import numpy as np
@@ -13,6 +16,39 @@ from scicomp.utils.logging_config import setup_logging
 
 setup_logging()
 logger = logging.getLogger(__name__)
+
+
+class ShapeEnum(StrEnum):
+    """Enum corresponding to the different defined Domains."""
+
+    Rectangle = "rectangle"
+    Square = "square"
+    Circle = "circle"
+
+    def domain(
+        self, width: int | Fraction, height: int | Fraction | None = None
+    ) -> Domain:
+        """Construct a domain with the given shape."""
+        if height is not None and self != ShapeEnum.Rectangle:
+            logger.warning(
+                "`height` parameter has no effect for shapes other than Rectangle."
+            )
+        elif height is None and self == ShapeEnum.Rectangle:
+            logger.warning(
+                "No `height` parameter provided for shape `Rectangle`, "
+                "re-using `width`."
+            )
+            height = width
+
+        match self:
+            case ShapeEnum.Square:
+                d = Rectangle(width)
+            case ShapeEnum.Rectangle:
+                d = Rectangle(width, height)
+            case ShapeEnum.Circle:
+                d = Circle(width)
+
+        return d
 
 
 class Domain(ABC):
@@ -27,7 +63,7 @@ class Domain(ABC):
     def solve_eigenproblem(
         self,
         k: int,
-        ny: int | None = None,
+        ny: int,
         use_sparse: bool = True,
         shift_invert: bool = True,
         index_grid: npt.NDArray[np.float64] | None = None,
@@ -54,7 +90,7 @@ class Domain(ABC):
             laplacian = self.construct_discrete_laplacian(
                 ny=ny,
                 use_sparse=use_sparse,
-                divide_stepsize=True,
+                divide_stepsize=False,
                 index_grid=index_grid,
             )
         else:
@@ -67,9 +103,10 @@ class Domain(ABC):
             shift_invert=shift_invert,
         )
 
-        # Calculate frequencies and eigenmods
         eigenvalues, eigenvectors = solver(laplacian)
-        eigenfrequencies = (-eigenvalues) ** 0.5
+
+        # Eigenfrequency is sqrt(-λ)/h = sqrt(-λ) * n / length..
+        eigenfrequencies = ((-eigenvalues) ** 0.5) * (ny / self.length)
 
         # Determine how many of the should be returned
         sort_idx = np.argsort(np.abs(eigenvalues))[:k]
@@ -99,15 +136,15 @@ class Domain(ABC):
                 raise ValueError("Exactly one of `ny`, `index_grid` must be provided.")
             index_grid = self.discretise(ny)
         if ny is None:
-            ny = index_grid.shape[0]
-        nx = index_grid.shape[1]
+            ny = index_grid.shape[0] - 1
+        nx = index_grid.shape[1] - 1
         assert ny is not None
 
         n_points = self.discretisation_size(index_grid=index_grid)
         matrix_type = sp.lil_matrix if use_sparse else np.zeros
         laplacian = matrix_type((n_points, n_points), dtype=np.float64)
-        for i in range(ny):
-            for j in range(nx):
+        for i in range(ny + 1):
+            for j in range(nx + 1):
                 # Ensure the point is part of the shape
                 if np.isnan(index_grid[i, j]):
                     continue
@@ -122,15 +159,15 @@ class Domain(ABC):
 
                     # Check if the neighbour exists (if not bound condition applied)
                     if (
-                        0 <= ni < ny
-                        and 0 <= nj < nx
+                        0 <= ni < ny + 1
+                        and 0 <= nj < nx + 1
                         and not np.isnan(index_grid[ni, nj])
                     ):
                         laplacian[idx, int(index_grid[ni, nj])] = 1
 
         if divide_stepsize:
             h = self.calculate_step_size(ny)
-            laplacian /= float(h) ** 2
+            laplacian /= float(h**2)
 
         return laplacian
 
@@ -220,12 +257,20 @@ class Domain(ABC):
 
     @property
     def width(self) -> Fraction:
-        """Physical domain width."""
+        """Physical domain width.
+
+        Given that the shape's with and height are the same,
+        otherwise it should be overridden in the shape specific domain class.
+        """
         return self._length
 
     @property
     def height(self) -> Fraction:
-        """Physical domain height."""
+        """Physical domain height.
+
+        Given that the shape's with and height are the same,
+        otherwise it should be overridden in the shape specific domain class.
+        """
         return self._length
 
     @property
@@ -287,3 +332,63 @@ class Circle(Domain):
     def y_max(self) -> float:
         """Maximum y-value contained within circle."""
         return self.length / 2
+
+
+class Rectangle(Domain):
+    """Rectangular domain, centered at the origin."""
+
+    def __init__(self, a_side: int | Fraction, b_side: int | Fraction | None = None):
+        """Initialisation of the Rectangle class.
+
+        Arguments are going to set based on the following logic:
+           ______________
+          |             |
+        b |             |
+          |_____________|
+                 a
+
+        In case the b_side is not specified during the initialisation, a square is
+        created with the side length equal a_side.
+        """
+        b_side = b_side or a_side
+        super().__init__(max(a_side, b_side))
+        self.a_side = Fraction(a_side)
+        self.b_side = Fraction(b_side)
+
+    def contains(
+        self, x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]
+    ) -> npt.NDArray[np.bool]:
+        """Create a mask of x,y values contained within the rectangle."""
+        return (np.abs(x) < float(self.a_side) / 2) & (
+            np.abs(y) < float(self.b_side) / 2
+        )
+
+    @property
+    def x_min(self) -> float:
+        """Minimum x-value contained within rectangle."""
+        return float(-self.a_side / 2)
+
+    @property
+    def x_max(self) -> float:
+        """Maximum x-value contained within rectangle."""
+        return float(self.a_side / 2)
+
+    @property
+    def y_min(self) -> float:
+        """Minimum y-value contained within rectangle."""
+        return float(-self.b_side / 2)
+
+    @property
+    def y_max(self) -> float:
+        """Maximum y-value contained within rectangle."""
+        return float(self.b_side / 2)
+
+    @property
+    def width(self) -> Fraction:
+        """Physical domain width."""
+        return self.a_side
+
+    @property
+    def height(self) -> Fraction:
+        """Physical domain height."""
+        return self.b_side

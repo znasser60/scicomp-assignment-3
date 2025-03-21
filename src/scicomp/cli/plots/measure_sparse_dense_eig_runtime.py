@@ -36,7 +36,7 @@ def compare_eigensolver_runtime(
             "--quality-label",
             help="The quality of the plot, as specified in the file name.",
         ),
-    ],
+    ] = "undefined",
 ):
     """Create and save plot comparing runtime of different eigensolvers."""
     fig, ax = plt.subplots(figsize=(3, 2), layout="constrained")
@@ -107,6 +107,7 @@ def measure_runtime(
             start = perf_counter()
             domain.solve_eigenproblem(
                 k=n - 1,
+                ny=n,
                 index_grid=index_grid,
                 laplacian=laplacian,
                 shift_invert=shift_invert,

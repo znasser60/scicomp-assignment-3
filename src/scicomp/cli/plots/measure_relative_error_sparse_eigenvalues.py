@@ -21,7 +21,7 @@ def compare_eigensolver_results(
             "--quality-label",
             help="The quality of the plot, as specified in the file name.",
         ),
-    ],
+    ] = "undefined",
 ):
     """Create plot of differences in results between sparse and dense eigensolvers.
 
@@ -56,17 +56,25 @@ def compare_eigensolver_results(
         )
 
         freqs, _ = domain.solve_eigenproblem(
-            k=k, laplacian=dense_laplacian, index_grid=index_grid
+            k=k, ny=n, laplacian=dense_laplacian, index_grid=index_grid
         )
         dom_dense.append(freqs[0])
 
         freqs, _ = domain.solve_eigenproblem(
-            k=k, laplacian=sparse_laplacian, index_grid=index_grid, shift_invert=False
+            k=k,
+            ny=n,
+            laplacian=sparse_laplacian,
+            index_grid=index_grid,
+            shift_invert=False,
         )
         dom_sparse.append(freqs[0])
 
         freqs, _ = domain.solve_eigenproblem(
-            k=k, laplacian=sparse_laplacian, index_grid=index_grid, shift_invert=True
+            k=k,
+            ny=n,
+            laplacian=sparse_laplacian,
+            index_grid=index_grid,
+            shift_invert=True,
         )
         dom_sparse_si.append(freqs[0])
 

@@ -85,9 +85,9 @@ def select_solver(
     match use_sparse, shift_invert:
         case False, _:
             eig_solver = la.eigh
-        case True, False:
-            eig_solver = partial(sp_la.eigsh, k=k, sigma=0, v0=np.ones(ev_length))
         case True, True:
+            eig_solver = partial(sp_la.eigsh, k=k, sigma=0, v0=np.ones(ev_length))
+        case True, False:
             eig_solver = partial(sp_la.eigsh, k=k, which="SM", v0=np.ones(ev_length))
 
     return eig_solver
