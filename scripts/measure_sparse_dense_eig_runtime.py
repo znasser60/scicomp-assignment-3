@@ -1,15 +1,22 @@
 """Compare performance of different eigensolvers."""
 
 import argparse
+from functools import partial
 from time import perf_counter
 
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 from matplotlib.axes import Axes
+from scipy import linalg as la
+from scipy.sparse.linalg import eigs, eigsh
 from tqdm import tqdm
 
-from scicomp.domains import Circle
+from scicomp.eig_val_calc.circle import (
+    construct_circle_laplacian,
+    initialize_grid,
+    solve_circle_laplacian,
+)
 
 """Z-score for 2 standard deviations."""
 Z2STDEV = 1.97
@@ -21,6 +28,7 @@ def measure_runtime(
     repeats: int = 1,
     use_sparse: bool = False,
     shift_invert: bool = False,
+    use_eigsh: bool = False,
     timeout: float | None = None,
     prog_bar: tqdm | None = None,
 ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
@@ -42,6 +50,7 @@ def measure_runtime(
             used to divide the cartesian axes.
         repeats: Number of repeats used to calculate the sample standard deviation.
         use_sparse: Use a sparse eigensolver.
+        use_eigsh: Use the eigsh eigensolver (applicable for sparse eigensolvers).
         shift_invert: Use the shift-invert setting in eigensolver (only applicable
             for sparse eigensolvers).
         timeout: Maximum runtime before termination.
@@ -50,37 +59,47 @@ def measure_runtime(
 
     Returns:
         Tuple contaning two 1D Numpy arrays: (mean, std), each with length equal
-        to the number of elements specified in the `ns` parameter.
+        to the number of elements specified in the ns parameter.
     """
     runtime = np.empty((repeats, len(ns)), dtype=np.float64)
 
-    domain = Circle(length)
     for n_i, n in enumerate(ns):
         if prog_bar is not None:
             if use_sparse and shift_invert:
                 mode = "sparse + shift-inv"
+            elif use_sparse and use_eigsh:
+                mode = "sparse (eigsh)"
             elif use_sparse:
-                mode = "sparse"
+                mode = "sparse (eigs)"
             else:
                 mode = "dense"
-            prog_bar.set_description(f"Measure eig-solver runtime ({mode=}, N={n})")
+            prog_bar.set_description(f"Measure eig-solver runtime ({mode}, N={n})")
 
-        index_grid = domain.discretise(n)
-        laplacian = domain.construct_discrete_laplacian(
-            use_sparse=use_sparse, index_grid=index_grid
+        _, index_grid = initialize_grid(length, n)
+        laplacian = construct_circle_laplacian(
+            index_grid, length, n, use_sparse=use_sparse
         )
         for r in range(repeats):
             start = perf_counter()
-            domain.solve_eigenproblem(
-                k=n - 1,
-                index_grid=index_grid,
-                laplacian=laplacian,
-                shift_invert=shift_invert,
-            )
+            if use_sparse:
+                if use_eigsh:
+                    eig_solver = partial(
+                        eigsh, k=n - 1, which="SM", sigma=0 if shift_invert else None
+                    )
+                else:
+                    eig_solver = partial(
+                        eigs, k=n - 1, which="SM", sigma=0 if shift_invert else None
+                    )
+                eig_solver(laplacian)
+            else:
+                la.eigh(laplacian)
+
+            solve_circle_laplacian(laplacian, n, k=n - 1, shift_invert=shift_invert)
             duration = perf_counter() - start
             runtime[r, n_i] = duration
             if prog_bar is not None:
                 prog_bar.update()
+
         if timeout is not None:
             mean = runtime[:, n_i].mean()
             std = runtime[:, n_i].std(ddof=1)
@@ -150,10 +169,20 @@ def compare_runtime_sparse_vs_dense(
             timeout=timeout,
             prog_bar=prog_bar,
         )
+        mean_sparse_eigsh, std_sparse_eigsh = measure_runtime(
+            length,
+            ns,
+            repeats,
+            use_sparse=True,
+            use_eigsh=True,
+            timeout=timeout,
+            prog_bar=prog_bar,
+        )
 
     ci_dense = z_score * std_dense / (repeats**0.5)
     ci_sparse = z_score * std_sparse / (repeats**0.5)
     ci_sparse_shift_inv = z_score * std_sparse_shift_inv / (repeats**0.5)
+    ci_sparse_eigsh = z_score * std_sparse_eigsh / (repeats**0.5)
 
     ax.plot(ns, mean_dense, label="Dense")
     ax.fill_between(
@@ -163,11 +192,27 @@ def compare_runtime_sparse_vs_dense(
         alpha=0.7,
     )
 
-    ax.plot(ns, mean_sparse, label="Sparse")
+    # ax.plot(ns, mean_sparse, label="Sparse")
+    # ax.fill_between(
+    #     ns,
+    #     mean_sparse - ci_sparse,
+    #     mean_sparse + ci_sparse,
+    #     alpha=0.7,
+    # )
+
+    ax.plot(ns, mean_sparse, label="Sparse (eigs)")
     ax.fill_between(
         ns,
         mean_sparse - ci_sparse,
         mean_sparse + ci_sparse,
+        alpha=0.7,
+    )
+
+    ax.plot(ns, mean_sparse_eigsh, label="Sparse (eigsh)")
+    ax.fill_between(
+        ns,
+        mean_sparse_eigsh - ci_sparse_eigsh,
+        mean_sparse_eigsh + ci_sparse_eigsh,
         alpha=0.7,
     )
 
