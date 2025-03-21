@@ -288,7 +288,7 @@ def plot_eigenspectrum_by_n(
         saturation=0.5,
         split=True,
         inner="stick",
-        inner_kws={"linewidths": 0.15},
+        inner_kws={"linewidths": 0.15, "colors": "0.8"},
         palette=palette,
         ax=ax,
     )
