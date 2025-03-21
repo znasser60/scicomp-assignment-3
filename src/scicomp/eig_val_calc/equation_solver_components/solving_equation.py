@@ -69,6 +69,7 @@ def select_solver(
     ev_length: int,
     k: int,
     use_sparse: bool = False,
+    use_eigsh: bool = True,
     shift_invert: bool = False,
 ) -> Callable:
     """Sets up the eigenvalue solver function.
@@ -77,18 +78,20 @@ def select_solver(
         ev_length: Number of elements in solution eigenvectors.
         k: Number of eigenvalues to compute.
         use_sparse: Boolean to use sparse solver of not.
+        use_eigsh: Use the eigsh eigensolver (applicable for sparse eigensolvers).
         shift_invert: Boolean to use shift inverse or not.
 
     Returns:
         Solver function.
     """
-    match use_sparse, shift_invert:
-        case False, _:
-            eig_solver = la.eigh
-        case True, True:
-            eig_solver = partial(sp_la.eigsh, k=k, sigma=0, v0=np.ones(ev_length))
-        case True, False:
-            eig_solver = partial(sp_la.eigsh, k=k, which="SM", v0=np.ones(ev_length))
+    if not use_sparse:
+        eig_solver = la.eigh
+    else:
+        solver_fn = sp_la.eigsh if use_eigsh else sp_la.eigs
+        if shift_invert:
+            eig_solver = partial(solver_fn, k=k, sigma=0, v0=np.ones(ev_length))
+        else:
+            eig_solver = partial(solver_fn, k=k, which="SM", v0=np.ones(ev_length))
 
     return eig_solver
 
