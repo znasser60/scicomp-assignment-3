@@ -17,7 +17,7 @@ else ifeq ($(QUALITY),high)
 	QUALITY_PARAMS_COMPARE_EIGENSOLVER_RESULTS = --max-n 91 --quality-label $(QUALITY)
 	QUALITY_PARAMS_EIGENSPECTRUM_BY_LENGTH = --n-at-unit-length 100 --quality-label $(QUALITY)
 	QUALITY_PARAMS_EIGENSPECTRUMS_BOTH = --min-n 20 --max-n 100 --quality-label $(QUALITY)
-	QUALITY_PARAMS_WAVE_ANIMATION = --domain circle --n 500 --animation-speed 10 --repeats 5 --fps 60 --dpi 200 --quality-label $(QUALITY)
+	QUALITY_PARAMS_WAVE_ANIMATION = --domain circle --n 500 --animation-speed 1 --repeats 5 --fps 60 --dpi 200 --quality-label $(QUALITY)
 else
 	$(error Invalid quality specifier: $(QUALITY). Choose 'low' or 'high'.)
 endif

@@ -11,7 +11,7 @@ from matplotlib.axes import Axes
 from matplotlib.image import AxesImage
 from matplotlib.patches import Patch
 
-from scicomp.domains import ShapeEnum
+from scicomp.domains import Domain, ShapeEnum
 
 
 def configure_mpl():
@@ -84,12 +84,57 @@ def plot_eigenmode(
         origin="lower",
         cmap="bwr",
     )
-    # extra_space = 1.1
-    # ax.set_xlim(-radius * extra_space, radius * extra_space)
-    # ax.set_ylim(-radius * extra_space, radius * extra_space)
-    ax.set_title(f"λ={freq:.4f}")
+    ax.set_title(f"$\\omega = {freq:.2f}$", fontsize=9)
 
     return im_ax
+
+
+def plot_shape_eigenmodes(
+    domain: Domain,
+    n: int,
+    use_sparse: bool,
+    shift_invert: bool,
+    axes,
+):
+    """Plot first `k` eigenmodes for a 2D Domain as heatmaps.
+
+    Args:
+        domain: 2D domain (shape).
+        n: Spatial discretisation resolution.
+        use_sparse: Use sparse eigenvalue solver.
+        shift_invert: Use shift-invert method to improve performance when
+            identifying small magnitude eigenvalues. Only applicable for
+            sparse solvers.
+        axes: Row of matplotlib axes to plot onto. Length of row must == `k`.
+    """
+    k = len(axes)
+    index_grid = domain.discretise(n)
+    eigenfrequencies, eigenmodes = domain.solve_eigenproblem(
+        k=k,
+        ny=n,
+        use_sparse=use_sparse,
+        shift_invert=shift_invert,
+        index_grid=index_grid,
+    )
+    for i, ax in enumerate(axes):
+        plot_eigenmode(
+            eigenmodes[:, i],
+            eigenfrequencies[i],
+            float(domain.width),
+            float(domain.height),
+            index_grid,
+            ax=ax,
+        )
+        ax.tick_params(
+            axis="both",
+            which="both",
+            bottom=False,
+            left=False,
+            labelbottom=False,
+            labelleft=False,
+        )
+        for spine in ax.spines.values():
+            spine.set_visible(False)
 
 
 def plot_eigenspectrum_by_length(
