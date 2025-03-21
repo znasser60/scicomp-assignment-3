@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 class ShapeEnum(StrEnum):
     """Enum corresponding to the different defined Domains."""
 
-    Square = "square"
     Rectangle = "rectangle"
+    Square = "square"
     Circle = "circle"
 
     def domain(

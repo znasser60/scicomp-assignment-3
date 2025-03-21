@@ -2,6 +2,7 @@
 
 import typer
 
+from .eigenfrequency_spectrums_both import app as eigenfreq_spec_both_app
 from .eigenfrequency_spectrums_by_length import app as eigenfreq_spec_by_len_app
 from .eigenfrequency_spectrums_by_n import app as eigenfreq_spec_by_n_app
 from .eigenmodes import app as eigenmods_app
@@ -19,5 +20,6 @@ app.add_typer(measure_rel_err_spars_eigval_app)
 app.add_typer(measure_sparse_dense_eig_runtime_app)
 app.add_typer(eigenfreq_spec_by_len_app)
 app.add_typer(eigenfreq_spec_by_n_app)
+app.add_typer(eigenfreq_spec_both_app)
 app.add_typer(eigenmods_app)
 app.add_typer(laplacian_app)
