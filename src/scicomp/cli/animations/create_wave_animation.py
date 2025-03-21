@@ -52,7 +52,7 @@ def eigenmode(
             "--quality-label",
             help="The quality of the plot, as specified in the file name.",
         ),
-    ],
+    ] = "undefined",
     width: Annotated[int, typer.Option("--width", help="Physical width of shape.")] = 1,
     height: Annotated[
         int | None,

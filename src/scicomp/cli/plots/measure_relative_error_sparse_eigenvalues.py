@@ -21,7 +21,7 @@ def compare_eigensolver_results(
             "--quality-label",
             help="The quality of the plot, as specified in the file name.",
         ),
-    ],
+    ] = "undefined",
 ):
     """Create plot of differences in results between sparse and dense eigensolvers.
 

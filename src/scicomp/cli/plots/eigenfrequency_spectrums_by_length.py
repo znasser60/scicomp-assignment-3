@@ -26,7 +26,7 @@ def eigenspectrum_by_length(
         typer.Option(
             "--quality-label",
         ),
-    ],
+    ] = "undefined",
 ):
     """Plot spectrum of eigenfrequencies for varying length."""
     h = Fraction(1, n_at_unit_length)
