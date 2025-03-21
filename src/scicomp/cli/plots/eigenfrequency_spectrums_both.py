@@ -37,10 +37,10 @@ def eigenspectrums(
     fig, axes = plt.subplots(
         1,
         2,
-        figsize=(3.5, 2.25),
+        figsize=(3.3, 2),
         sharey=True,
         constrained_layout=True,
-        gridspec_kw=dict(width_ratios=[0.5, 1.0]),
+        gridspec_kw=dict(width_ratios=[0.6, 1.0]),
     )
 
     palette = sns.color_palette()
