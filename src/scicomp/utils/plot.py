@@ -19,7 +19,7 @@ def configure_mpl():
     FONT_SIZE_SMALL = 8
     FONT_SIZE_DEFAULT = 10
 
-    plt.rc("font", family="Georgia")
+    plt.rc("font", family="Libertinus Serif")
     plt.rc("font", weight="normal")  # controls default font
     plt.rc("mathtext", fontset="stix")
     plt.rc("font", size=FONT_SIZE_DEFAULT)  # controls default text sizes
