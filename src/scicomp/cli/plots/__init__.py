@@ -13,6 +13,9 @@ from .measure_relative_error_sparse_eigenvalues import (
 from .measure_sparse_dense_eig_runtime import (
     app as measure_sparse_dense_eig_runtime_app,
 )
+from .steady_state_diffusion_circular_domain import (
+    app as steady_state_diffusion_circular_domain_app,
+)
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -23,3 +26,4 @@ app.add_typer(eigenfreq_spec_by_n_app)
 app.add_typer(eigenfreq_spec_both_app)
 app.add_typer(eigenmods_app)
 app.add_typer(laplacian_app)
+app.add_typer(steady_state_diffusion_circular_domain_app)

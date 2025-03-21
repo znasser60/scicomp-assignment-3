@@ -256,7 +256,7 @@ def plot_circle_diffusion(n, c_grid, length):
     x = np.linspace(-length / 2, length / 2, n)
     y = np.linspace(-length / 2, length / 2, n)
     X, Y = np.meshgrid(x, y)
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(3, 3))
     plt.pcolormesh(X, Y, c_grid, cmap="YlOrRd", vmin=0, vmax=1)
     plt.colorbar(label="Concentration c(x, y)")
     plt.xlabel("x")
