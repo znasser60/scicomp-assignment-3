@@ -129,7 +129,7 @@ def animate_eigenmode(
     period = 2 * np.pi / (freq * c)
     runtime = (period * repeats) / animation_speed
     n_frames = int(math.ceil(runtime * fps))
-    frame_times = np.linspace(0, period, n_frames)
+    frame_times = np.linspace(0, repeats * period, n_frames)
 
     # Prepare coordinates for drum
     x = np.linspace(-length / 2, length / 2, n + 1)
@@ -137,7 +137,7 @@ def animate_eigenmode(
     X, Y = np.meshgrid(x, y)
 
     fig = plt.figure(figsize=(6, 6))
-    fig.suptitle(f"$\\lambda={freq:.2f}$hz, ({animation_speed}x speed)")
+    fig.suptitle(f"$\\omega={freq:.2f}\\text{{rad}}/s$, ({animation_speed}x speed)")
     ax = fig.add_subplot(111, projection="3d")
 
     # Satisfy type-checker that this is indeed a 3D axis
