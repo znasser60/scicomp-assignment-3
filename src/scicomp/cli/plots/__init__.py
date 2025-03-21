@@ -13,6 +13,8 @@ from .measure_relative_error_sparse_eigenvalues import (
 from .measure_sparse_dense_eig_runtime import (
     app as measure_sparse_dense_eig_runtime_app,
 )
+from .spring_energy import app as spring_energy_app
+from .spring_phaseplot import app as spring_phaseplot_app
 from .steady_state_diffusion_circular_domain import (
     app as steady_state_diffusion_circular_domain_app,
 )
@@ -26,4 +28,6 @@ app.add_typer(eigenfreq_spec_by_n_app)
 app.add_typer(eigenfreq_spec_both_app)
 app.add_typer(eigenmods_app)
 app.add_typer(laplacian_app)
+app.add_typer(spring_phaseplot_app)
+app.add_typer(spring_energy_app)
 app.add_typer(steady_state_diffusion_circular_domain_app)
