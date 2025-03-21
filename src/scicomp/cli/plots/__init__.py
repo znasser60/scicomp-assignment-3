@@ -31,3 +31,4 @@ app.add_typer(laplacian_app)
 app.add_typer(spring_phaseplot_app)
 app.add_typer(spring_energy_app)
 app.add_typer(steady_state_diffusion_circular_domain_app)
+

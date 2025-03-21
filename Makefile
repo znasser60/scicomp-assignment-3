@@ -25,7 +25,9 @@ endif
 FIGURE_NAMES = \
 		eigenmodes.pdf \
 		compare_results_eigensolvers_$(QUALITY)_quality.pdf \
-		eigenfrequency_spectrums_$(QUALITY)_quality.pdf
+		eigenfrequency_spectrums_$(QUALITY)_quality.pdf \
+		spring_1d_phaseplot.pdf \
+		spring_1d_energy.pdf
 
 SERIAL_FIGURE_NAMES = \
 		compare_runtime_eigensolvers_$(QUALITY)_quality.pdf
@@ -65,6 +67,16 @@ $(FIGURES_DIR)/eigenfrequency_spectrums_$(QUALITY)_quality.pdf: \
 			src/scicomp/cli/plots/eigenfrequency_spectrums_both.py \
 			| $(FIGURES_DIR)
 	$(ENTRYPOINT) scicomp plot eigenspectrums $(QUALITY_PARAMS_EIGENSPECTRUMS_BOTH)
+
+$(FIGURES_DIR)/spring_1d_phaseplot.pdf: \
+			src/scicomp/cli/plots/spring_phaseplot.py \
+			| $(FIGURES_DIR)
+	$(ENTRYPOINT) scicomp plot spring-phaseplot
+
+$(FIGURES_DIR)/spring_1d_energy.pdf: \
+			src/scicomp/cli/plots/spring_energy.py \
+			| $(FIGURES_DIR)
+	$(ENTRYPOINT) scicomp plot spring-energy
 
 $(ANIMATIONS_DIR)/circular_drum_k_%_$(QUALITY)_quality.mp4: \
 			src/scicomp/cli/animations/create_wave_animation.py \
