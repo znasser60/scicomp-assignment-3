@@ -11,12 +11,14 @@ ifeq ($(QUALITY),low)
 	QUALITY_PARAMS_COMPARE_EIGENSOLVER_RESULTS = --max-n 66 --quality-label $(QUALITY)
 	QUALITY_PARAMS_EIGENSPECTRUM_BY_LENGTH = --n-at-unit-length 50 --quality-label $(QUALITY)
 	QUALITY_PARAMS_EIGENSPECTRUMS_BOTH = --min-n 20 --max-n 50 --quality-label $(QUALITY)
+	QUALITY_PARAMS_STEADY_STATE_DIFFUSION = --n 250 --quality-label $(QUALITY)
 	QUALITY_PARAMS_WAVE_ANIMATION = --domain circle --n 50 --animation-speed 0.25 --repeats 3 --fps 10 --dpi 100 --quality-label $(QUALITY)
 else ifeq ($(QUALITY),high)
 	QUALITY_PARAMS_COMPARE_EIGENSOLVER_RUNTIME = --repeats 30 --timeout "4.0" --quality-label $(QUALITY)
 	QUALITY_PARAMS_COMPARE_EIGENSOLVER_RESULTS = --max-n 91 --quality-label $(QUALITY)
 	QUALITY_PARAMS_EIGENSPECTRUM_BY_LENGTH = --n-at-unit-length 100 --quality-label $(QUALITY)
 	QUALITY_PARAMS_EIGENSPECTRUMS_BOTH = --min-n 20 --max-n 50 --quality-label $(QUALITY)
+	QUALITY_PARAMS_STEADY_STATE_DIFFUSION = --n 1000 --quality-label $(QUALITY)
 	QUALITY_PARAMS_WAVE_ANIMATION = --domain circle --n 1000 --animation-speed 0.25 --repeats 5 --fps 60 --dpi 200 --quality-label $(QUALITY)
 else
 	$(error Invalid quality specifier: $(QUALITY). Choose 'low' or 'high'.)
@@ -27,7 +29,8 @@ FIGURE_NAMES = \
 		compare_results_eigensolvers_$(QUALITY)_quality.pdf \
 		eigenfrequency_spectrums_$(QUALITY)_quality.pdf \
 		spring_1d_phaseplot.pdf \
-		spring_1d_energy.pdf
+		spring_1d_energy.pdf \
+		steady_state_diffusion_$(QUALITY)_quality.pdf
 
 SERIAL_FIGURE_NAMES = \
 		compare_runtime_eigensolvers_$(QUALITY)_quality.pdf
@@ -77,6 +80,11 @@ $(FIGURES_DIR)/spring_1d_energy.pdf: \
 			src/scicomp/cli/plots/spring_energy.py \
 			| $(FIGURES_DIR)
 	$(ENTRYPOINT) scicomp plot spring-energy
+
+$(FIGURES_DIR)/steady_state_diffusion_$(QUALITY)_quality.pdf: \
+			src/scicomp/cli/plots/steady_state_diffusion_circular_domain.py \
+			| $(FIGURES_DIR)
+	$(ENTRYPOINT) scicomp plot circular-steady-state-diffusion $(QUALITY_PARAMS_STEADY_STATE_DIFFUSION)
 
 $(ANIMATIONS_DIR)/circular_drum_k_%_$(QUALITY)_quality.mp4: \
 			src/scicomp/cli/animations/create_wave_animation.py \
