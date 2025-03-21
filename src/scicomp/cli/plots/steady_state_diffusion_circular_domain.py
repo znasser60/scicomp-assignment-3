@@ -1,3 +1,5 @@
+from typing import Annotated
+
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,6 +19,7 @@ def circular_steady_state_diffusion(
     source_position: tuple[float, float] = typer.Option(
         (0.6, 1.2), help="Position of the source on the grid."
     ),
+    quality_label: Annotated[str, typer.Option("--quality-label")] = "undefined",
 ):
     """Plots the steady-state diffusion solution on a circular domain."""
     c_grid = solve_circle_diffusion(source_position, length, n, use_sparse=True)
@@ -37,8 +40,14 @@ def circular_steady_state_diffusion(
     ax.spines["left"].set_visible(False)
     ax.spines["bottom"].set_visible(False)
 
-    fig.savefig("results/figures/steady_state_diffusion.png", bbox_inches="tight")
-    fig.savefig("results/figures/steady_state_diffusion.pdf", bbox_inches="tight")
+    fig.savefig(
+        f"results/figures/steady_state_diffusion_{quality_label}_quality.png",
+        bbox_inches="tight",
+    )
+    fig.savefig(
+        f"results/figures/steady_state_diffusion_{quality_label}_quality.pdf",
+        bbox_inches="tight",
+    )
 
 
 def plot_circle_diffusion(
