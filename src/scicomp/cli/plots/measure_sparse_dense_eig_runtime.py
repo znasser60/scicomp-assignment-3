@@ -39,7 +39,7 @@ def compare_eigensolver_runtime(
     ] = "undefined",
 ):
     """Create and save plot comparing runtime of different eigensolvers."""
-    fig, ax = plt.subplots(figsize=(3, 2), layout="constrained")
+    fig, ax = plt.subplots(figsize=(3.3, 2), layout="constrained")
     compare_runtime_sparse_vs_dense(
         length=1, ns=np.arange(10, 300, 10), repeats=repeats, timeout=timeout, ax=ax
     )
@@ -55,6 +55,7 @@ def measure_runtime(
     repeats: int = 1,
     use_sparse: bool = False,
     shift_invert: bool = False,
+    use_eigsh: bool = False,
     timeout: float | None = None,
     prog_bar: tqdm | None = None,
 ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
@@ -76,6 +77,7 @@ def measure_runtime(
             used to divide the cartesian axes.
         repeats: Number of repeats used to calculate the sample standard deviation.
         use_sparse: Use a sparse eigensolver.
+        use_eigsh: Use the eigsh eigensolver (applicable for sparse eigensolvers).
         shift_invert: Use the shift-invert setting in eigensolver (only applicable
             for sparse eigensolvers).
         timeout: Maximum runtime before termination.
@@ -93,8 +95,10 @@ def measure_runtime(
         if prog_bar is not None:
             if use_sparse and shift_invert:
                 mode = "sparse + shift-inv"
+            elif use_sparse and use_eigsh:
+                mode = "sparse (eigsh)"
             elif use_sparse:
-                mode = "sparse"
+                mode = "sparse (eigs)"
             else:
                 mode = "dense"
             prog_bar.set_description(f"Measure eig-solver runtime ({mode=}, N={n})")
@@ -111,6 +115,7 @@ def measure_runtime(
                 index_grid=index_grid,
                 laplacian=laplacian,
                 shift_invert=shift_invert,
+                use_eigsh=use_eigsh,
             )
             duration = perf_counter() - start
             runtime[r, n_i] = duration
@@ -158,12 +163,22 @@ def compare_runtime_sparse_vs_dense(
     if ax is None:
         ax = plt.gca()
 
-    with tqdm(total=(len(ns) * repeats * 3)) as prog_bar:
+    with tqdm(total=(len(ns) * repeats * 4)) as prog_bar:
         mean_dense, std_dense = measure_runtime(
             length,
             ns,
             repeats,
             use_sparse=False,
+            timeout=timeout,
+            prog_bar=prog_bar,
+        )
+        mean_sparse_eigs, std_sparse_eigs = measure_runtime(
+            length,
+            ns,
+            repeats,
+            use_sparse=True,
+            shift_invert=False,
+            use_eigsh=False,
             timeout=timeout,
             prog_bar=prog_bar,
         )
@@ -173,6 +188,7 @@ def compare_runtime_sparse_vs_dense(
             repeats,
             use_sparse=True,
             shift_invert=False,
+            use_eigsh=True,
             timeout=timeout,
             prog_bar=prog_bar,
         )
@@ -182,15 +198,17 @@ def compare_runtime_sparse_vs_dense(
             repeats,
             use_sparse=True,
             shift_invert=True,
+            use_eigsh=True,
             timeout=timeout,
             prog_bar=prog_bar,
         )
 
     ci_dense = z_score * std_dense / (repeats**0.5)
     ci_sparse = z_score * std_sparse / (repeats**0.5)
+    ci_sparse_eigs = z_score * std_sparse_eigs / (repeats**0.5)
     ci_sparse_shift_inv = z_score * std_sparse_shift_inv / (repeats**0.5)
 
-    ax.plot(ns, mean_dense, label="Dense")
+    ax.plot(ns, mean_dense, label="la.eigh")
     ax.fill_between(
         ns,
         mean_dense - ci_dense,
@@ -198,7 +216,15 @@ def compare_runtime_sparse_vs_dense(
         alpha=0.7,
     )
 
-    ax.plot(ns, mean_sparse, label="Sparse")
+    ax.plot(ns, mean_sparse_eigs, label="sp.eigs")
+    ax.fill_between(
+        ns,
+        mean_sparse_eigs - ci_sparse_eigs,
+        mean_sparse_eigs + ci_sparse_eigs,
+        alpha=0.7,
+    )
+
+    ax.plot(ns, mean_sparse, label="sp.eigsh")
     ax.fill_between(
         ns,
         mean_sparse - ci_sparse,
@@ -206,7 +232,7 @@ def compare_runtime_sparse_vs_dense(
         alpha=0.7,
     )
 
-    ax.plot(ns, mean_sparse_shift_inv, label="Sparse (shift-inv)")
+    ax.plot(ns, mean_sparse_shift_inv, label="sp.eigsh (SI)")
     ax.fill_between(
         ns,
         mean_sparse_shift_inv - ci_sparse_shift_inv,
@@ -217,11 +243,12 @@ def compare_runtime_sparse_vs_dense(
     ax.set_xlabel("Spatial discretisation intervals (N)")
     ax.set_ylabel("Runtime (s)")
     ax.legend(
-        ncol=3,
+        ncol=4,
         loc="lower center",
         bbox_to_anchor=(0.5, 1.0),
         fontsize=8,
         handlelength=1,
+        columnspacing=0.5,
         labelspacing=0.2,
         frameon=False,
     )
