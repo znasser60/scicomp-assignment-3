@@ -1,4 +1,3 @@
-from fractions import Fraction
 from typing import Annotated
 
 import matplotlib.colors as colors
@@ -16,7 +15,7 @@ app = typer.Typer()
 @app.command()
 def circular_steady_state_diffusion(
     length: Annotated[
-        int | Fraction,
+        int,
         typer.Option("--length", help="Diameter of the circular domain."),
     ] = 4,
     n: Annotated[
@@ -39,8 +38,6 @@ def circular_steady_state_diffusion(
     domain = shape.domain(width=length)
 
     c_grid = domain.solve_diffusion(source_position, n, use_sparse=True)
-
-    # c_grid = solve_circle_diffusion(source_position, length, n, use_sparse=True)
 
     radius = length / 2
     fig, ax = plt.subplots(figsize=(3, 2), constrained_layout=True)
@@ -75,8 +72,8 @@ def plot_circle_diffusion(
     if ax is None:
         ax = plt.gca()
 
-    x = np.linspace(-radius, radius, n)
-    y = np.linspace(-radius, radius, n)
+    x = np.linspace(-radius, radius, n + 1)
+    y = np.linspace(-radius, radius, n + 1)
     X, Y = np.meshgrid(x, y)
     mask = (radius) ** 2 > (X**2 + Y**2)
 
@@ -88,3 +85,7 @@ def plot_circle_diffusion(
         extent=(-radius, radius, -radius, radius),
     )
     return heatmap
+
+
+circular_steady_state_diffusion(4, 150)
+alma = 1
