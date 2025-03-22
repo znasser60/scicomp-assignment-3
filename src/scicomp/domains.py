@@ -274,13 +274,13 @@ class Domain(ABC):
         else:
             use_sparse = isinstance(laplacian, sp.lil_matrix)
 
-        source_idx = self._calculate_source_idx(ny, source_position)
+        source_idx = self._calculate_source_idx(ny, source_position, index_grid)
 
         # Update the original laplacian matrix with the source information
         laplacian[source_idx, :] = 0
         laplacian[source_idx, source_idx] = 1
 
-        b = self._compute_diff_result_vector(ny, source_idx)
+        b = self._compute_diff_result_vector(source_idx, index_grid)
 
         solver = select_diffusion_solver(use_sparse)
         c = solver(laplacian.tocsr() if use_sparse else laplacian, b)
@@ -290,7 +290,9 @@ class Domain(ABC):
 
         return c_grid
 
-    def _calculate_source_idx(self, ny: int, source_position: tuple) -> int:
+    def _calculate_source_idx(
+        self, ny: int, source_position: tuple, index_grid: npt.NDArray[np.float64]
+    ) -> int:
         """Computes the index of the source.
 
         The index is determined in the c vector (flatten (1D) array of the original
@@ -299,16 +301,15 @@ class Domain(ABC):
         Args:
             ny: Resolution of the discretisation in y-axis.
             source_position: Specified grid position of the source
+            index_grid: Pre-computed discretised index grid.
 
         Returns:
             Source index.
         """
         x, y = (
-            np.linspace(-self.length / 2, self.length / 2, ny),
-            np.linspace(-self.length / 2, self.length / 2, ny),
+            np.linspace(-self.length / 2, self.length / 2, ny + 1),
+            np.linspace(-self.length / 2, self.length / 2, ny + 1),
         )
-
-        index_grid = self.discretise(ny)
         source_idx = index_grid[
             np.argmin(np.abs(y - source_position[1])),
             np.argmin(np.abs(x - source_position[0])),
@@ -316,19 +317,19 @@ class Domain(ABC):
 
         return int(source_idx)
 
+    @staticmethod
     def _compute_diff_result_vector(
-        self, ny: int, source_idx: int
+        source_idx: int, index_grid: npt.NDArray[np.float64]
     ) -> npt.NDArray[np.float64]:
         """Computes the result vector in the Mc = b system.
 
         Args:
-            ny: Resolution of the discretisation in y-axis.
             source_idx: Source index.
+            index_grid: Pre-computed discretised index grid.
 
         Returns:
             'b' vector (1D numpy array)
         """
-        index_grid = self.discretise(ny)
         n_in_shape_points = (~np.isnan(index_grid)).sum()
         b = np.zeros(n_in_shape_points)
         b[source_idx] = 1

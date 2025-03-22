@@ -87,5 +87,4 @@ def plot_circle_diffusion(
     return heatmap
 
 
-circular_steady_state_diffusion(4, 150)
-alma = 1
+circular_steady_state_diffusion()
