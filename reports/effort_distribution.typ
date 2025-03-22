@@ -8,7 +8,7 @@
 
 *GitHub URL:* #link("https://github.com/znasser60/scicomp-assignment-3")
 
-As with the previous assignment, we met prior to starting the third assignment, to 
+As with the previous assignment, we met prior to starting the third assignment to 
 discuss the parts of the previous project that went well, those that didn't, and 
 how how improve the experience in this project. We then scheduled an in-person 
 meeting to discuss the theoretical aspects of this assigment and lay the 
