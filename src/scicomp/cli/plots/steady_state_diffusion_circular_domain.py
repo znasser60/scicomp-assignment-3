@@ -1,3 +1,4 @@
+from fractions import Fraction
 from typing import Annotated
 
 import matplotlib.colors as colors
@@ -7,22 +8,39 @@ import numpy.typing as npt
 import typer
 from matplotlib.axes import Axes
 
-from scicomp.eig_val_calc.circle import solve_circle_diffusion
+from scicomp.domains import ShapeEnum
 
 app = typer.Typer()
 
 
 @app.command()
 def circular_steady_state_diffusion(
-    length: float = typer.Option(4.0, help="Diameter of the circular domain."),
-    n: int = typer.Option(150, help="Number of grid points in each dimension."),
-    source_position: tuple[float, float] = typer.Option(
-        (0.6, 1.2), help="Position of the source on the grid."
-    ),
-    quality_label: Annotated[str, typer.Option("--quality-label")] = "undefined",
+    length: Annotated[
+        int | Fraction,
+        typer.Option("--length", help="Diameter of the circular domain."),
+    ] = 4,
+    n: Annotated[
+        int, typer.Option("--n", help="Number of grid points in each dimension.")
+    ] = 150,
+    source_position: Annotated[
+        tuple[int, int],
+        typer.Option("--source-position", help="Position of the source on the grid."),
+    ] = (0.6, 1.2),
+    quality_label: Annotated[
+        str,
+        typer.Option(
+            "--quality-label",
+            help="The quality of the plot, as specified in the file name.",
+        ),
+    ] = "undefined",
 ):
     """Plots the steady-state diffusion solution on a circular domain."""
-    c_grid = solve_circle_diffusion(source_position, length, n, use_sparse=True)
+    shape = ShapeEnum.Circle
+    domain = shape.domain(width=length)
+
+    c_grid = domain.solve_diffusion(source_position, n, use_sparse=True)
+
+    # c_grid = solve_circle_diffusion(source_position, length, n, use_sparse=True)
 
     radius = length / 2
     fig, ax = plt.subplots(figsize=(3, 2), constrained_layout=True)
