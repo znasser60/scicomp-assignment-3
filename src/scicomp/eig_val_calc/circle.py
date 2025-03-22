@@ -182,13 +182,13 @@ def solve_circle_diffusion(
                 on a circle domain.
 
     """
-    _, index_grid = initialize_grid(length, n)
+    _, index_grid = initialize_grid(length, n + 1)
     laplacian = construct_circle_laplacian(index_grid, length, n, use_sparse)
     num_circle_points = (~np.isnan(index_grid)).sum()
     b = np.zeros(num_circle_points)
     x, y = (
-        np.linspace(-length / 2, length / 2, n),
-        np.linspace(-length / 2, length / 2, n),
+        np.linspace(-length / 2, length / 2, n + 1),
+        np.linspace(-length / 2, length / 2, n + 1),
     )
     source_idx = index_grid[
         np.argmin(np.abs(y - source_position[1])),
@@ -202,7 +202,7 @@ def solve_circle_diffusion(
 
     c = sp_la.spsolve(laplacian.tocsr(), b) if use_sparse else la.solve(laplacian, b)
 
-    c_grid = np.full((n, n), np.nan)
+    c_grid = np.full((n + 1, n + 1), np.nan)
     c_grid[~np.isnan(index_grid)] = c
 
     return c_grid

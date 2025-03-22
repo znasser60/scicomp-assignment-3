@@ -22,7 +22,7 @@ def circular_steady_state_diffusion(
         int, typer.Option("--n", help="Number of grid points in each dimension.")
     ] = 150,
     source_position: Annotated[
-        tuple[int, int],
+        tuple[float, float],
         typer.Option("--source-position", help="Position of the source on the grid."),
     ] = (0.6, 1.2),
     quality_label: Annotated[
@@ -85,6 +85,3 @@ def plot_circle_diffusion(
         extent=(-radius, radius, -radius, radius),
     )
     return heatmap
-
-
-circular_steady_state_diffusion()
