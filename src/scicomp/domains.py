@@ -249,7 +249,6 @@ class Domain(ABC):
         source_position: tuple,
         ny: int,
         use_sparse: bool = False,
-        index_grid: npt.NDArray[np.float64] | None = None,
         laplacian: npt.NDArray[np.float64] | sp.lil_matrix | None = None,
     ):
         """Solves the steady state diffusion equation using direct methods (Mc = b).
@@ -258,16 +257,16 @@ class Domain(ABC):
             source_position: Specified grid position of the source
             ny: Resolution of the discretisation in y-axis.
             use_sparse: Boolean to use sparse solver of not.
-            index_grid: Optional pre-discretised index grid.
             laplacian: Optional pre-computed discrete laplacian matrix.
 
         Returns:
             A 2D array representing the concentration distribution across the grid
                 on a circle domain.
         """
+        index_grid = self.discretise(ny)
         if laplacian is None:
             laplacian = self.construct_discrete_laplacian(
-                ny=ny,
+                ny=None,
                 use_sparse=use_sparse,
                 divide_stepsize=False,
                 index_grid=index_grid,
@@ -286,7 +285,7 @@ class Domain(ABC):
         solver = select_diffusion_solver(use_sparse)
         c = solver(laplacian.tocsr() if use_sparse else laplacian, b)
 
-        c_grid = np.full((ny, ny), np.nan)
+        c_grid = np.full((ny + 1, ny + 1), np.nan)
         c_grid[~np.isnan(index_grid)] = c
 
         return c_grid
