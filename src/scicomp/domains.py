@@ -268,7 +268,7 @@ class Domain(ABC):
             laplacian = self.construct_discrete_laplacian(
                 ny=None,
                 use_sparse=use_sparse,
-                divide_stepsize=False,
+                divide_stepsize=True,
                 index_grid=index_grid,
             )
         else:
