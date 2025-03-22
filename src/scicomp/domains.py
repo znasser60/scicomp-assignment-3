@@ -67,6 +67,7 @@ class Domain(ABC):
         ny: int,
         use_sparse: bool = True,
         shift_invert: bool = True,
+        use_eigsh: bool = True,
         index_grid: npt.NDArray[np.float64] | None = None,
         laplacian: npt.NDArray[np.float64] | sp.lil_matrix | None = None,
     ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
@@ -81,6 +82,7 @@ class Domain(ABC):
             ny: Resolution of the discretisation in y-axis.
             use_sparse: Boolean to use sparse solver of not.
             shift_invert: Boolean to use shift inverse or not.
+            use_eigsh: Use the eigsh eigensolver (applicable for sparse eigensolvers).
             index_grid: Optional pre-discretised index grid.
             laplacian: Optional pre-computed discrete laplacian matrix.
 
@@ -101,6 +103,7 @@ class Domain(ABC):
             ev_length=self.discretisation_size(ny=ny, index_grid=index_grid),
             k=k,
             use_sparse=use_sparse,
+            use_eigsh=use_eigsh,
             shift_invert=shift_invert,
         )
 

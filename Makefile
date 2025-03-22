@@ -44,13 +44,44 @@ ANIMATION_NAMES = \
 ANIMATIONS = $(patsubst %, $(ANIMATIONS_DIR)/%, $(ANIMATION_NAMES))
 
 
-.PHONY: all serial clean
+.PHONY: all serial git-fame clean
 
 
 all: $(FIGURES) $(ANIMATIONS) 
 
 serial: $(SERIAL_FIGURES)
 
+git-fame: reports/effort_distribution.pdf
+
+# =======================
+# Git-fame/effort-distribution compilation
+# =======================
+reports/effort_distribution.pdf: \
+			reports/effort_distribution.typ \
+			reports/git_fame_summary.csv \
+			reports/git_fame_detailed.csv \
+			reports/build_time.json
+	typst compile reports/effort_distribution.typ
+
+
+reports/build_time.json: reports/git_fame_detailed.csv reports/git_fame_summary.csv
+	echo "{\"datetime\": \"$$(TZ=CET date)\"}" > $@
+
+
+reports/git_fame_summary.csv: reports/git_fame_full_output.csv
+	tail -n 2 $< > $@
+
+
+reports/git_fame_detailed.csv: reports/git_fame_full_output.csv
+	head -n $$(( $$(wc -l $< | awk '{print $$1}') - 3 )) $< > $@
+
+reports/git_fame_full_output.csv: 
+	uvx git-fame --excl "uv.lock,assignment_spec.pdf,LICENSE.md,README.md,pyproject.toml,.gitignore,.pre-commit-config.yaml" --no-regex -M -C --format csv > $@
+
+
+# =======================
+# Figures and animations
+# =======================
 $(FIGURES_DIR)/eigenmodes.pdf: \
 			src/scicomp/cli/plots/eigenmodes.py \
 			| $(FIGURES_DIR)
@@ -99,6 +130,6 @@ $(FIGURES_DIR):
 $(ANIMATIONS_DIR):
 	mkdir -p $@
 
-.PHONY: clean
+REPORT_FILES = reports/effort_distribution.pdf reports/build_time.json reports/git_fame_detailed.csv reports/git_fame_summary.csv reports/git_fame_full_output.csv 
 clean:
-	rm -rf results
+	rm -rf results $(REPORT_INTERMEDIATE_FILES)

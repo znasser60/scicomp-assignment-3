@@ -33,12 +33,12 @@ def spring_phaseplot():
         )
 
         states = simulate_oscillator(x0, v0, k, m, dt, runtime)
-        (lineplot,) = ax.plot(states[:, 1], states[:, 0], label=f"$k={k}$")
+        (lineplot,) = ax.plot(states[:, 1], states[:, 0], linewidth=1, label=f"$k={k}$")
         ax.annotate(
             "",
             xy=(states[-1, 1] + 1, states[-1, 0]),
-            xytext=(states[-1, 1], states[-1, 0]),
-            arrowprops={"arrowstyle": "->", "lw": 2, "color": lineplot.get_color()},
+            xytext=(states[-1, 1] - 0.5, states[-1, 0]),
+            arrowprops={"arrowstyle": "->", "lw": 1, "color": lineplot.get_color()},
         )
 
     ax.legend(

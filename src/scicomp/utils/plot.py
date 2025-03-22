@@ -2,11 +2,13 @@
 
 import itertools
 from fractions import Fraction
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 import seaborn as sns
+from matplotlib import font_manager
 from matplotlib.axes import Axes
 from matplotlib.image import AxesImage
 from matplotlib.patches import Patch
@@ -18,6 +20,8 @@ def configure_mpl():
     """Configure Matplotlib style."""
     FONT_SIZE_SMALL = 8
     FONT_SIZE_DEFAULT = 10
+    FONT_PATH = Path("fonts/LibertinusSerif-Regular.otf")
+    font_manager.fontManager.addfont(FONT_PATH)
 
     plt.rc("font", family="Libertinus Serif")
     plt.rc("font", weight="normal")  # controls default font
