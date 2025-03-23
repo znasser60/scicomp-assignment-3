@@ -1,6 +1,8 @@
 """Leapfrog method to simulate a 1D harmonic oscillator."""
 
+from collections.abc import Callable
 from fractions import Fraction
+from functools import partial
 
 import numpy as np
 import numpy.typing as npt
@@ -33,6 +35,8 @@ def simulate_oscillator(
     m: float,
     dt: Fraction,
     runtime: int | Fraction,
+    forcing_frequency: float | None = None,
+    forcing_amplitude: float | None = None,
 ) -> npt.NDArray[np.float64]:
     """Simulate a spring under simple harmonic motion with Leapfrog method.
 
@@ -43,6 +47,8 @@ def simulate_oscillator(
         m: Mass of object at the end of the spring (kg).
         dt: Duration of a discrete time-step.
         runtime: Total duration to simulate.
+        forcing_frequency: Angular frequency of optional temporal forcing.
+        forcing_amplitude: Amplitude of optional temporal forcing.
 
     Returns:
         Numpy array with shape (time, 2), where the first column contains
@@ -79,52 +85,116 @@ def simulate_oscillator(
             "scheme stability. Expect 2*dt < angular frequency."
         )
 
+    # Construct optional periodic temporal forcing
+    if forcing_frequency is not None:
+        forcing_fn = partial(
+            sinusoid_forcing, omega=forcing_frequency, amplitude=forcing_amplitude
+        )
+    else:
+        forcing_fn = identity_forcing
+
     # Calculate v_(1/2) and x_1 separately first
-    vhalf = update_velocity(v0, x0, omega_sq, float(delta_t / 2))
-    x1 = update_position(x0, vhalf, float(delta_t))
+    vhalf = update_velocity(
+        v0,
+        x0,
+        t=float(delta_t / 2),
+        omega_sq=omega_sq,
+        dt=float(delta_t / 2),
+        temporal_forcing=forcing_fn,
+    )
+    x1 = update_position(x0, vhalf, dt=float(delta_t))
 
     # Iterate until n == n_steps, recording new x and halfstep v for each n
     states = np.empty((n_steps + 1, 2), dtype=np.float64)
     states[0] = (v0, x0)
     states[1] = (vhalf, x1)
     for n in range(2, n_steps + 1):
-        states[n] = update_state(*states[n - 1], omega_sq=omega_sq, dt=delta_t)
+        states[n] = update_state(
+            *states[n - 1],
+            omega_sq=omega_sq,
+            t=n * delta_t,
+            dt=delta_t,
+            temporal_forcing=forcing_fn,
+        )
 
     return states
 
 
+def sinusoid_forcing(t: float, omega: float, amplitude: float | None) -> float:
+    """Sinusoidal forcing with angular frequency omega.
+
+    Args:
+        t: Time.
+        omega: Angular frequency (rad/s).
+        amplitude: Amplitude of forcing (m). Defaults to 1m.
+
+    Returns:
+        sin(omega * t)
+    """
+    amplitude = amplitude or 1
+    return amplitude * np.sin(omega * t)
+
+
+def identity_forcing(_t: float) -> float:
+    """Identity (zero) temporal forcing.
+
+    Args:
+        _t: Time.
+
+    Returns:
+        Zero.
+    """
+    return 0.0
+
+
 def update_state(
-    v_prev: float, x_prev: float, omega_sq: float, dt: float
+    v_prev: float,
+    x_prev: float,
+    t: float,
+    omega_sq: float,
+    dt: float,
+    temporal_forcing: Callable[[float], float],
 ) -> tuple[float, float]:
     """Perform a single update of the discrete 1D spring scheme.
 
     Args:
         v_prev: Velocity at the previous time-step.
         x_prev: Position at the previous time-step.
+        t: Current time.
         omega_sq: Squared angular frequency of the spring system.
         dt: Discrete time-step duration.
+        temporal_forcing: Temporal forcing function.
 
     Returns:
         Tuple containing the new velocity and new position, both as floats.
     """
-    v_new = update_velocity(v_prev, x_prev, omega_sq, dt)
+    v_new = update_velocity(v_prev, x_prev, t - dt / 2, omega_sq, dt, temporal_forcing)
     x_new = update_position(x_prev, v_new, dt)
     return (v_new, x_new)
 
 
-def update_velocity(v_prev: float, x_prev: float, omega_sq: float, dt: float) -> float:
+def update_velocity(
+    v_prev: float,
+    x_prev: float,
+    t: float,
+    omega_sq: float,
+    dt: float,
+    temporal_forcing: Callable[[float], float],
+) -> float:
     """Calculate updated velocity of the discrete 1D spring scheme.
 
     Args:
         v_prev: Previous velocity.
         x_prev: Previous position.
+        t: Current time.
         omega_sq: Squared angular frequency of the spring system.
         dt: Discrete time-step duration.
+        temporal_forcing: Temporal forcing function.
 
     Returns:
         New velocity at the next time-step.
     """
-    return v_prev - dt * omega_sq * x_prev
+    return v_prev + dt * (temporal_forcing(t) - omega_sq) * x_prev
 
 
 def update_position(x_prev: float, v_prev: float, dt: float) -> float:
