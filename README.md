@@ -24,6 +24,11 @@ run the experiments, simply run:
 $ make -j
 ```
 
+To run an experiment that plots runtimes for different eigenvalue solvers, run: 
+```bash
+$ make serial
+```
+
 The resulting figures are located under `results/figures/`.
 
 By default, experiments are run in a 'quick' mode with a coarser grid than is used 
