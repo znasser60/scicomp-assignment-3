@@ -21,9 +21,8 @@ def spring_phaseplot():
     runtime = 5
 
     fig, axes = plt.subplots(
-        1, 3, figsize=(3.3, 2), constrained_layout=True, sharey=True
+        1, 3, figsize=(3.3, 1.7), constrained_layout=True, sharey=True
     )
-    # axes[0].set_xlabel("Displacement ($m$)")
     axes[0].set_ylabel("Velocity ($m/s$)")
     for ax in axes.flatten():
         ax.spines["top"].set_visible(False)
