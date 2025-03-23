@@ -39,10 +39,11 @@ def compare_eigensolver_runtime(
     ] = "undefined",
 ):
     """Create and save plot comparing runtime of different eigensolvers."""
-    fig, ax = plt.subplots(figsize=(3.3, 2), layout="constrained")
+    fig, ax = plt.subplots(figsize=(3.3, 1.5), layout="constrained")
     compare_runtime_sparse_vs_dense(
         length=1, ns=np.arange(10, 300, 10), repeats=repeats, timeout=timeout, ax=ax
     )
+    ax.set_ylim(0, 4)
     fig.savefig(
         f"results/figures/compare_runtime_eigensolvers_{quality_label}_quality.pdf",
         bbox_inches="tight",
@@ -255,6 +256,5 @@ def compare_runtime_sparse_vs_dense(
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.set_xlim(0, None)
-    ax.set_ylim(0, None)
 
     return ax

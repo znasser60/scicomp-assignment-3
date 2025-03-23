@@ -88,21 +88,22 @@ def compare_eigensolver_results(
     rel_diff_sparse_dense = abs_diff_sparse_dense / dom_dense
     rel_diff_sparse_si_dense = abs_diff_sparse_si_dense / dom_dense
 
-    fig, axes = plt.subplots(1, 2, figsize=(3.5, 1.5), constrained_layout=True)
+    fig, axes = plt.subplots(1, 2, figsize=(3.5, 1.35), constrained_layout=True)
     axes[0].plot(ns, abs_diff_sparse_dense)
     axes[0].plot(ns, abs_diff_sparse_si_dense)
     axes[1].plot(ns, rel_diff_sparse_dense)
     axes[1].plot(ns, rel_diff_sparse_si_dense)
 
-    axes[0].set_ylabel("Absolute error")
-    axes[1].set_ylabel("Relative error")
+    axes[0].set_ylabel("Abs. error")
+    axes[1].set_ylabel("Rel. error")
 
     for ax in axes:
-        ax.set_xlabel("N")
         ax.set_xlim(0, None)
         ax.set_ylim(0, None)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
+
+    fig.supxlabel("$N$")
 
     fig.savefig(
         f"results/figures/compare_results_eigensolvers_{quality_label}_quality.pdf",

@@ -36,7 +36,7 @@ def spring_energy():
     runtime = float(runtime_frac)
 
     fig, axes = plt.subplots(
-        2, 1, figsize=(2.8, 2.0), sharex=True, constrained_layout=True
+        2, 1, figsize=(2.8, 1.5), sharex=True, constrained_layout=True
     )
     solvers = (simulate_leapfrog, simulate_runge_kutta)
     for ax, solver in zip(axes.flatten(), solvers, strict=True):
