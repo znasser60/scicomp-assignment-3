@@ -14,6 +14,7 @@ import scipy.sparse as sp
 from scicomp.solvers import select_diff_solver as select_diffusion_solver
 from scicomp.solvers import select_eig_solver as select_eigenproblem_solver
 from scicomp.utils.logging_config import setup_logging
+from scicomp.utils.verification import check_z_folder_input
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -70,6 +71,8 @@ class Domain(ABC):
         use_eigsh: bool = True,
         index_grid: npt.NDArray[np.float64] | None = None,
         laplacian: npt.NDArray[np.float64] | sp.lil_matrix | None = None,
+        indexing_type: str = "row-wise",  # Current implementation allows "row-wise"
+        # and "z-order"
     ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         """Calculates the frequencies and the eigenmodes.
 
@@ -85,6 +88,7 @@ class Domain(ABC):
             use_eigsh: Use the eigsh eigensolver (applicable for sparse eigensolvers).
             index_grid: Optional pre-discretised index grid.
             laplacian: Optional pre-computed discrete laplacian matrix.
+            indexing_type: Determines which indexing structure is used
 
         Returns:
             Frequencies (ω) (1D numpy array) and eigenmodes (v) (2D numpy array).
@@ -95,12 +99,15 @@ class Domain(ABC):
                 use_sparse=use_sparse,
                 divide_stepsize=False,
                 index_grid=index_grid,
+                indexing_type=indexing_type,
             )
         else:
             use_sparse = isinstance(laplacian, sp.lil_matrix)
 
         solver = select_eigenproblem_solver(
-            ev_length=self.discretisation_size(ny=ny, index_grid=index_grid),
+            ev_length=self.discretisation_size(
+                ny=ny, index_grid=index_grid, indexing_type=indexing_type
+            ),
             k=k,
             use_sparse=use_sparse,
             use_eigsh=use_eigsh,
@@ -123,6 +130,7 @@ class Domain(ABC):
         use_sparse: bool = False,
         divide_stepsize: bool = True,
         index_grid: npt.NDArray[np.float64] | None = None,
+        indexing_type: str = "row-wise",
     ) -> npt.NDArray[np.float64]:
         """Construct the discrete Laplacian matrix for domain.
 
@@ -131,6 +139,7 @@ class Domain(ABC):
             use_sparse: Boolean to use sparse solver of not.
             divide_stepsize: Boolean, if true, divides Laplacian by h^2.
             index_grid: Optional pre-discretised index grid.
+            indexing_type: Determines which indexing structure is used
 
         Returns:
             Discrete Laplacian matrix of size MxM where M = (ny + 1) x (nx + 1).
@@ -138,7 +147,7 @@ class Domain(ABC):
         if index_grid is None:
             if ny is None:
                 raise ValueError("Exactly one of `ny`, `index_grid` must be provided.")
-            index_grid = self.discretise(ny)
+            index_grid = self.discretise(ny, indexing_type)
         if ny is None:
             ny = index_grid.shape[0] - 1
         nx = index_grid.shape[1] - 1
@@ -176,7 +185,10 @@ class Domain(ABC):
         return laplacian
 
     def discretisation_size(
-        self, ny: int | None = None, index_grid: npt.NDArray[np.float64] | None = None
+        self,
+        ny: int | None = None,
+        index_grid: npt.NDArray[np.float64] | None = None,
+        indexing_type: str = "row-wise",
     ) -> int:
         """Calculate the number of elements in the discretised matrix.
 
@@ -185,6 +197,7 @@ class Domain(ABC):
         Args:
             ny: Resolution of the discretization of the y-axis.
             index_grid: Pre-computed discretised index grid.
+            indexing_type: Determines which indexing structure is used
 
         Returns:
             Integer number of elements.
@@ -192,11 +205,13 @@ class Domain(ABC):
         if index_grid is None and ny is None:
             raise ValueError("Exactly one of `ny`, `index_grid` must be provided.")
         elif index_grid is None and ny is not None:
-            index_grid = self.discretise(ny)
+            index_grid = self.discretise(ny, indexing_type)
         assert index_grid is not None
         return (~np.isnan(index_grid)).sum()
 
-    def discretise(self, ny: int) -> npt.NDArray[np.float64]:
+    def discretise(
+        self, ny: int, indexing_type: str = "row-wise"
+    ) -> npt.NDArray[np.float64]:
         """Discretise the domain into a grid of indices.
 
         This function creates a square (N + 1) x (N + 1) grid representing a domain
@@ -206,6 +221,7 @@ class Domain(ABC):
 
         Args:
             ny: Resolution of the discretization of the y-axis.
+            indexing_type: Determines which indexing structure is used
 
         Returns:
             2D array with indices starting from 0 for points inside the circle, and None
@@ -218,11 +234,75 @@ class Domain(ABC):
         x, y = np.meshgrid(x_range, y_range)
         mask = self.contains(x, y)
         index_grid = np.full_like(x, np.nan, dtype=np.float64)
-        index_grid[mask] = np.arange(np.sum(mask))
+
+        match indexing_type:
+            case "row-wise":
+                indexing = self.row_wise_indexing(mask)
+            case "z-order":
+                indexing = self.z_order_indexing(mask)
+            case _:
+                raise ValueError("Invalid indexing type.")
+
+        index_grid[mask] = indexing
 
         logger.info("Indexing for domain has been created successfully.")
 
         return index_grid
+
+    @staticmethod
+    def row_wise_indexing(mask: npt.NDArray[np.bool]) -> npt.NDArray[np.float64]:
+        """Creates row-wise indexing for the corresponding mask shape.
+
+        Args:
+            mask: 2D NumPy array containing boolean values indicating whether each cell
+                    belongs to the original shape or not.
+
+        Returns:
+            Row-wise indexing (1D flatten numpy array)
+        """
+        return np.arange(np.sum(mask))
+
+    @staticmethod
+    def z_order_indexing(mask: npt.NDArray[np.bool]) -> npt.NDArray[np.float64]:
+        """Creates z-order indexing for the corresponding mask shape.
+
+        Args:
+            mask: 2D NumPy array containing boolean values indicating whether each cell
+                    belongs to the original shape or not.
+
+        Returns:
+            Z-order indexing (1D flatten numpy array)
+        """
+        check_z_folder_input(mask)
+
+        # Removing any row or columns that is not part of the original rectangle shape
+        domain_shape = mask[np.any(mask, axis=1), :][:, np.any(mask, axis=0)]
+        m, n = domain_shape.shape
+
+        # Create sub-square
+        current_indexing = np.array([[0, 1], [2, 3]])
+        for _ in range(int(np.min([m, n]) / 2 - 1)):
+            shift_scaler = current_indexing[-1, -1] + 1
+            current_indexing = np.block(
+                [
+                    [current_indexing, current_indexing + shift_scaler],
+                    [
+                        current_indexing + shift_scaler * 2,
+                        current_indexing + shift_scaler * 3,
+                    ],
+                ]
+            )
+
+        # Add the rest of the rectangle
+        if m < n:
+            repeat_counter = int(n / m)
+            for _ in range(repeat_counter - 1):
+                shift_scaler = current_indexing[-1, -1]
+                current_indexing = np.block(
+                    [[current_indexing, current_indexing + shift_scaler]]
+                )
+
+        return current_indexing.flatten()
 
     def calculate_step_size(self, n: int) -> Fraction:
         """Calculate discrete spatial step-size given n spatial intervals.
