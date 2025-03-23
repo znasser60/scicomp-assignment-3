@@ -7,7 +7,7 @@ import numpy as np
 import typer
 from tqdm import tqdm
 
-from scicomp.domains import Circle
+from scicomp.model_elements.domains import Circle
 
 app = typer.Typer()
 

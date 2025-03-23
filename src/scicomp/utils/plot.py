@@ -13,7 +13,7 @@ from matplotlib.axes import Axes
 from matplotlib.image import AxesImage
 from matplotlib.patches import Patch
 
-from scicomp.domains import Domain, ShapeEnum
+from scicomp.model_elements.domains import Domain, ShapeEnum
 
 
 def configure_mpl():

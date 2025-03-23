@@ -2,17 +2,17 @@
 The code in this repository falls into X categories:
 - Source code (`src/scicomp`): Modular code intended for use as a Python package. Includes simulation/model code.
 - Command-line interface (`src/scicomp/cli/*`): Defines low-level CLI access to simulations for animation and plotting purposes.
-- Tests (`src/tests`).
+- Tests (`tests`).
 
 Experiments are orchestrated by the [Makefile](Makefile), which internally uses the `scicomp` CLI to drive the 
 simulations which form the basis of the results featured in the associated report.
 
 ## Source code
-The majority of the code related to the eigenmodes and steady-state diffusion is found in `src/scicomp/domains.py`. There
+The majority of the code related to the eigenmodes and steady-state diffusion is found in `src/scicomp/model_elements/domains.py`. There
 we define an abstract `Domain` base class from which the shapes used in these experiments inherit. As the systems in these 
 experiments have very similar definitions, we define much of their shared functionality within `Domain`. This includes:
 
-+ Discretisation validity checking (does the step-size divide both cartesian dimensions?)
++ Discretisation validity checking (e.g., does the step-size divide both cartesian dimensions?)
 + Construction of the discrete Laplacian matrix
 + Masks used to select the cells contained within a shape from an enclosing rectangle
 + Various shape-or-plotting-related methods and properties, such as shape width, height, and axes-bounds.
