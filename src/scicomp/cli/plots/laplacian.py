@@ -5,7 +5,7 @@ from typing import Annotated
 import matplotlib.pyplot as plt
 import typer
 
-from scicomp.domains import ShapeEnum
+from scicomp.model_elements.domains import ShapeEnum
 
 app = typer.Typer()
 

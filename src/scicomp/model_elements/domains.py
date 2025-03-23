@@ -11,8 +11,10 @@ import numpy as np
 import numpy.typing as npt
 import scipy.sparse as sp
 
-from scicomp.solvers import select_diff_solver as select_diffusion_solver
-from scicomp.solvers import select_eig_solver as select_eigenproblem_solver
+from scicomp.model_elements.solvers import select_diff_solver as select_diffusion_solver
+from scicomp.model_elements.solvers import (
+    select_eig_solver as select_eigenproblem_solver,
+)
 from scicomp.utils.logging_config import setup_logging
 
 setup_logging()

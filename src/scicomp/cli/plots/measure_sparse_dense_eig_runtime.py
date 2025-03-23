@@ -10,7 +10,7 @@ import typer
 from matplotlib.axes import Axes
 from tqdm import tqdm
 
-from scicomp.domains import Circle
+from scicomp.model_elements.domains import Circle
 
 """Z-score for 2 standard deviations."""
 Z2STDEV = 1.97

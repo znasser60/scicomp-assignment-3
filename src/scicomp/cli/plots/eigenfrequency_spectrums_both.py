@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import typer
 
-from scicomp.domains import ShapeEnum
+from scicomp.model_elements.domains import ShapeEnum
 from scicomp.utils.plot import plot_eigenspectrum_by_length, plot_eigenspectrum_by_n
 
 app = typer.Typer()

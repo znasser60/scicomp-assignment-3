@@ -1,3 +1,5 @@
+"""Plot the result of a 2D diffusion with 0 BC and one point source."""
+
 from typing import Annotated
 
 import matplotlib.colors as colors
@@ -7,7 +9,7 @@ import numpy.typing as npt
 import typer
 from matplotlib.axes import Axes
 
-from scicomp.domains import ShapeEnum
+from scicomp.model_elements.domains import ShapeEnum
 
 app = typer.Typer()
 

@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 import typer
 
-from scicomp.domains import Circle, Rectangle
+from scicomp.model_elements.domains import Circle, Rectangle
 from scicomp.utils.plot import plot_shape_eigenmodes
 
 app = typer.Typer()

@@ -12,10 +12,8 @@ import typer
 from matplotlib.animation import FuncAnimation
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
-from scicomp.domains import ShapeEnum
-from scicomp.eig_val_calc.equation_solver_components.solving_equation import (
-    eval_oscillating_solution,
-)
+from scicomp.model_elements.domains import ShapeEnum
+from scicomp.model_elements.solving_wave_equation import eval_oscillating_solution
 
 app = typer.Typer()
 
