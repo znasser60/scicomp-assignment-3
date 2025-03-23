@@ -12,7 +12,7 @@ The majority of the code related to the eigenmodes and steady-state diffusion is
 we define an abstract `Domain` base class from which the shapes used in these experiments inherit. As the systems in these 
 experiments have very similar definitions, we define much of their shared functionality within `Domain`. This includes:
 
-+ Discretisation validity checking (does the step-size divide both cartesian dimensions?)
++ Discretisation validity checking (e.g., does the step-size divide both cartesian dimensions?)
 + Construction of the discrete Laplacian matrix
 + Masks used to select the cells contained within a shape from an enclosing rectangle
 + Various shape-or-plotting-related methods and properties, such as shape width, height, and axes-bounds.
