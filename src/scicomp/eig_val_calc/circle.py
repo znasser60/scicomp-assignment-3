@@ -182,13 +182,13 @@ def solve_circle_diffusion(
                 on a circle domain.
 
     """
-    _, index_grid = initialize_grid(length, n)
+    _, index_grid = initialize_grid(length, n + 1)
     laplacian = construct_circle_laplacian(index_grid, length, n, use_sparse)
     num_circle_points = (~np.isnan(index_grid)).sum()
     b = np.zeros(num_circle_points)
     x, y = (
-        np.linspace(-length / 2, length / 2, n),
-        np.linspace(-length / 2, length / 2, n),
+        np.linspace(-length / 2, length / 2, n + 1),
+        np.linspace(-length / 2, length / 2, n + 1),
     )
     source_idx = index_grid[
         np.argmin(np.abs(y - source_position[1])),
@@ -200,9 +200,9 @@ def solve_circle_diffusion(
     laplacian[source_idx, source_idx] = 1
     b[source_idx] = 1
 
-    c = sp_la.spsolve(laplacian, b) if use_sparse else la.solve(laplacian, b)
+    c = sp_la.spsolve(laplacian.tocsr(), b) if use_sparse else la.solve(laplacian, b)
 
-    c_grid = np.full((n, n), np.nan)
+    c_grid = np.full((n + 1, n + 1), np.nan)
     c_grid[~np.isnan(index_grid)] = c
 
     return c_grid
@@ -249,16 +249,3 @@ def plot_eigenmode(
     ax.set_title(f"λ={freq:.4f}")
 
     return im_ax
-
-
-def plot_circle_diffusion(n, c_grid, length):
-    """Plots the steady-state concentration solution on the circular domain."""
-    x = np.linspace(-length / 2, length / 2, n)
-    y = np.linspace(-length / 2, length / 2, n)
-    X, Y = np.meshgrid(x, y)
-    plt.figure(figsize=(8, 6))
-    plt.pcolormesh(X, Y, c_grid, cmap="YlOrRd", vmin=0, vmax=1)
-    plt.colorbar(label="Concentration c(x, y)")
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.show()

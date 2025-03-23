@@ -11,7 +11,8 @@ import numpy as np
 import numpy.typing as npt
 import scipy.sparse as sp
 
-from scicomp.eig_val_calc import select_solver as select_eigenproblem_solver
+from scicomp.solvers import select_diff_solver as select_diffusion_solver
+from scicomp.solvers import select_eig_solver as select_eigenproblem_solver
 from scicomp.utils.logging_config import setup_logging
 
 setup_logging()
@@ -245,6 +246,98 @@ class Domain(ABC):
                 f"height={float(self.height)} using fixed step-size."
             )
         return dy
+
+    def solve_diffusion(
+        self,
+        source_position: tuple,
+        ny: int,
+        use_sparse: bool = False,
+        laplacian: npt.NDArray[np.float64] | sp.lil_matrix | None = None,
+    ):
+        """Solves the steady state diffusion equation using direct methods (Mc = b).
+
+        Args:
+            source_position: Specified grid position of the source
+            ny: Resolution of the discretisation in y-axis.
+            use_sparse: Boolean to use sparse solver of not.
+            laplacian: Optional pre-computed discrete laplacian matrix.
+
+        Returns:
+            A 2D array representing the concentration distribution across the grid
+                on a circle domain.
+        """
+        index_grid = self.discretise(ny)
+        if laplacian is None:
+            laplacian = self.construct_discrete_laplacian(
+                ny=None,
+                use_sparse=use_sparse,
+                divide_stepsize=True,
+                index_grid=index_grid,
+            )
+        else:
+            use_sparse = isinstance(laplacian, sp.lil_matrix)
+
+        source_idx = self._calculate_source_idx(ny, source_position, index_grid)
+
+        # Update the original laplacian matrix with the source information
+        laplacian[source_idx, :] = 0
+        laplacian[source_idx, source_idx] = 1
+
+        b = self._compute_diff_result_vector(source_idx, index_grid)
+
+        solver = select_diffusion_solver(use_sparse)
+        c = solver(laplacian.tocsr() if use_sparse else laplacian, b)
+
+        c_grid = np.full((ny + 1, ny + 1), np.nan)
+        c_grid[~np.isnan(index_grid)] = c
+
+        return c_grid
+
+    def _calculate_source_idx(
+        self, ny: int, source_position: tuple, index_grid: npt.NDArray[np.float64]
+    ) -> int:
+        """Computes the index of the source.
+
+        The index is determined in the c vector (flatten (1D) array of the original
+        indexing given the shape) in the Mc = b system.
+
+        Args:
+            ny: Resolution of the discretisation in y-axis.
+            source_position: Specified grid position of the source
+            index_grid: Pre-computed discretised index grid.
+
+        Returns:
+            Source index.
+        """
+        x, y = (
+            np.linspace(-self.length / 2, self.length / 2, ny + 1),
+            np.linspace(-self.length / 2, self.length / 2, ny + 1),
+        )
+        source_idx = index_grid[
+            np.argmin(np.abs(y - source_position[1])),
+            np.argmin(np.abs(x - source_position[0])),
+        ]
+
+        return int(source_idx)
+
+    @staticmethod
+    def _compute_diff_result_vector(
+        source_idx: int, index_grid: npt.NDArray[np.float64]
+    ) -> npt.NDArray[np.float64]:
+        """Computes the result vector in the Mc = b system.
+
+        Args:
+            source_idx: Source index.
+            index_grid: Pre-computed discretised index grid.
+
+        Returns:
+            'b' vector (1D numpy array)
+        """
+        n_in_shape_points = (~np.isnan(index_grid)).sum()
+        b = np.zeros(n_in_shape_points)
+        b[source_idx] = 1
+
+        return b
 
     @abstractmethod
     def contains(
